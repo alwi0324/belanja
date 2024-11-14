@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="gaya.css">
+    <title>Daftar Belanjaan</title>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h2>Daftar Belanjaan</h2>
+            <div id="grocery">
+                <input type="text" id="writeList" placeholder="Ketik nama barang di sini..." autocomplete="off">
+                <button id="tambah">Tambahkan</button>
+            </div>
+        </div>
+        <ol id="belanja"></ol>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const isiHapus = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 18 18"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
+        const isiDone = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-check2" viewBox="0 0 18 18"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`
+
+        let jdl = document.querySelector('h2'),
+            list = document.querySelector('ol');
+
+        tambah.addEventListener('click', addItem);
+        writeList.addEventListener('keyup', (e) => {
+            if (e.keyCode == 13) {addItem()}
+        });
+
+        function tambahBelanja(barang) {
+            let item = document.createElement('li');
+            item.classList.add('item');
+            item.innerText = `${barang[0].toUpperCase()}${barang.slice(1)}`;
+            list.append(item);
+            delBtn(item);
+        }
+        function delBtn(which) {
+            let rmvBtn = document.createElement('span');
+            rmvBtn.innerHTML = isiHapus;
+            which.append(rmvBtn);
+        }
+
+        loadBelanja();
+
+        function addItem() {
+            let data = writeList.value;
+            if (data == '') {
+                swal.fire({
+                    title: "Isian Tidak Boleh Kosong!",
+                    text: "",
+                    icon: "error",
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            } else {
+                if (data.includes(". ")) {
+                    let dataNew = data.split(". ").slice(1),
+                        hasil = [];
+                        for (let i = 0; i < dataNew.length-1; i++) {
+                            hasil.push(dataNew[i].slice(0,-2));
+                        }
+                        hasil.push(dataNew[dataNew.length-1]);
+                        hasil.forEach(x => tambahBelanja(x));
+                } else {
+                    if(data.includes(',')) {
+                        let items = data.split(",");
+                        items.forEach(x => {
+                            x = x.trim();
+                            tambahBelanja(x);
+                        });
+                    } else {
+                        tambahBelanja(data.trim());
+                    }
+                }
+                jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
+                writeList.value = "";
+                belanja.style.display = 'block';
+                saveBelanja();
+            }
+            
+        }
+        
+        // Event delegation
+        document.addEventListener('click', e => {
+            if (e.target.matches(".item")) {
+                e.target.classList.toggle('done');
+                if(e.target.classList.length == 2) {
+                    e.target.querySelector('span').innerHTML = isiDone;
+                } else {
+                    e.target.querySelector('span').innerHTML = isiHapus;
+                }
+                saveBelanja();
+            }
+            if (e.target.matches(".bi-x-lg")) {
+                e.target.parentElement.parentElement.remove();
+                jdl.innerText = document.querySelectorAll('li').length ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
+                if (!list.querySelectorAll('li').length) {
+                    belanja.style.display = 'none';
+                }
+                saveBelanja();
+            }
+        });
+
+        function saveBelanja() {
+            localStorage.setItem('belanjaan', belanja.innerHTML);
+        }
+
+        function loadBelanja() {
+            if (localStorage.getItem('belanjaan') == null) {
+                jdl.innerText = 'Daftar Belanjaan';
+                belanja.style.display = 'none';
+            } else {
+                belanja.innerHTML = localStorage.getItem('belanjaan');
+                jdl.innerText = localStorage.getItem('belanjaan') != '' ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
+                belanja.style.display = localStorage.getItem('belanjaan') != '' ? 'block': 'none';
+            }
+        }
+    </script>
+</body>
+</html>

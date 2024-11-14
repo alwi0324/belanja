@@ -1,0 +1,109 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #9c27b0, #31d5eb);
+}
+.container {
+    position: relative;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.container .box {
+    position: relative;
+    width: 400px;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 15px 15px 15px rgba(0,0,0,0.1);
+}
+.container .box h2 {
+    font-size: 1.75em;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+    width: 100%;
+    text-align: center;
+}
+.container .box #grocery {
+    position: relative;
+    width: 100%;
+    display: flex;
+}
+#grocery input {
+    position: relative;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #333;
+    outline: none;
+}
+#grocery button {
+    background: #4bae4f;
+    color: #fff;
+    min-width: 100px;
+    font-weight: 500;
+    border: 1px solid #333;
+    cursor: pointer;
+    outline: none;
+}
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 25px;
+}
+::-webkit-scrollbar-thumb {
+    background: #acacac;
+    border-radius: 25px;
+}
+.container ol {
+    position: relative;
+    padding: 10px 20px 10px 40px;
+    width: 100%;
+    min-height: 40px;
+    max-height: 415px;
+    overflow-y: auto;
+    box-shadow: 15px 15px 15px rgba(0,0,0,0.1);
+    background: #fff;
+    background-size: 50px 50px;
+}
+.container ol li {
+    position: relative;
+    padding-top: 15px;
+    font-size: 1.4em;
+    height: 50px;
+    cursor: pointer;
+    background: #fff repeating-linear-gradient(transparent 0%, transparent 99%, #000 99%, #000 100%);
+    background-size: 50px 50px;
+}
+.container ol li.done {
+    text-decoration: line-through;
+    color: rgba(0,0,0,0.2);
+}
+.container ol li.done span {
+    background: #4bae4f;
+}
+.container ol li span {
+    position: absolute;
+    top: 15px;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    align-items: center;
+    background: red;
+    color: #fff;
+    padding-top: 2px;
+    padding-left: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+}
