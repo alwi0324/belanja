@@ -125,6 +125,9 @@
             if (localStorage.getItem('terbeli') == null || !list.querySelectorAll('li').length) {
                 buyed.style.display = 'none';
             } else {
+                if (list.querySelectorAll('li').length) {
+                    buyed.style.display = 'block';
+                }
                 buyed.style.display = 'block';
                 buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
             }
