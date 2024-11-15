@@ -126,8 +126,12 @@
             if (localStorage.getItem('terbeli') == null) {
                 buyed.style.display = 'none';
             } else {
-                buyed.style.display = 'block';
-                buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
+                if (localStorage.getItem('terbeli') == '0' && !list.querySelectorAll('li').length) {
+                    buyed.style.display = 'none';
+                } else {
+                    buyed.style.display = 'block';
+                    buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
+                }
             }
             
             if (localStorage.getItem('belanjaan') == null) {
