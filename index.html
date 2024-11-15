@@ -122,7 +122,7 @@
         }
 
         function loadBelanja() {
-            if (localStorage.getItem('terbeli') == null) {
+            if (localStorage.getItem('terbeli') == null || !list.querySelectorAll('li').length) {
                 buyed.style.display = 'none';
             } else {
                 buyed.style.display = 'block';
