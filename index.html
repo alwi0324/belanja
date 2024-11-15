@@ -13,7 +13,11 @@
 <body>
     <div class="container">
         <div class="box">
-            <h2>Daftar Belanjaan</h2>
+            <div style="margin-bottom: 13px;">
+                <h2>Daftar Belanjaan</h2>
+                <h4 id="buyed"></h4>
+            </div>
+            
             <div id="grocery">
                 <input type="text" id="writeList" placeholder="Ketik nama barang di sini..." autocomplete="off">
                 <button id="tambah">Tambahkan</button>
@@ -80,6 +84,7 @@
                     }
                 }
                 jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
+                buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
                 writeList.value = "";
                 belanja.style.display = 'block';
                 saveBelanja();
@@ -91,6 +96,7 @@
         document.addEventListener('click', e => {
             if (e.target.matches(".item")) {
                 e.target.classList.toggle('done');
+                buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
                 if(e.target.classList.length == 2) {
                     e.target.querySelector('span').innerHTML = isiDone;
                 } else {
@@ -110,9 +116,17 @@
 
         function saveBelanja() {
             localStorage.setItem('belanjaan', belanja.innerHTML);
+            localStorage.setItem('terbeli', list.querySelectorAll('li.done').length);
         }
 
         function loadBelanja() {
+            if (localStorage.getItem('terbeli') == 0 || localStorage.getItem('terbeli') == null) {
+                buyed.style.display = 'none';
+            } else {
+                buyed.style.display = 'block';
+                buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
+            }
+            
             if (localStorage.getItem('belanjaan') == null) {
                 jdl.innerText = 'Daftar Belanjaan';
                 belanja.style.display = 'none';
