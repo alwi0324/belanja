@@ -13,7 +13,7 @@
 <body>
     <div class="container">
         <div class="box">
-            <div style="margin-bottom: 13px;">
+            <div style="margin-bottom: 15px;">
                 <h2>Daftar Belanjaan</h2>
                 <h4 id="buyed"></h4>
             </div>
@@ -120,7 +120,7 @@
         }
 
         function loadBelanja() {
-            if (localStorage.getItem('terbeli') == 0 || localStorage.getItem('terbeli') == null) {
+            if (localStorage.getItem('terbeli') == null) {
                 buyed.style.display = 'none';
             } else {
                 buyed.style.display = 'block';
