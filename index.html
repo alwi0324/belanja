@@ -122,7 +122,7 @@
         }
 
         function loadBelanja() {
-            if ((localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length) || (localStorage.getItem('terbeli') == '0' && !list.querySelectorAll('li').length )){buyed.style.display = 'none'}
+            if (localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length){buyed.style.display = 'none'}
             if (localStorage.getItem('terbeli') == null) {
                 buyed.style.display = 'none';
             } else {
@@ -135,8 +135,15 @@
                 belanja.style.display = 'none';
             } else {
                 belanja.innerHTML = localStorage.getItem('belanjaan');
-                jdl.innerText = localStorage.getItem('belanjaan') != '' ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
-                belanja.style.display = localStorage.getItem('belanjaan') != '' ? 'block': 'none';
+                if (localStorage.getItem('belanjaan') != '') {
+                    jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
+                    buyed.style.display = 'block';
+                    belanja.style.display = 'block';
+                } else {
+                    jdl.innerText = 'Daftar Belanjaan';
+                    belanja.style.display = 'none';
+                    belanja.style.display = 'none';
+                }
             }
         }
     </script>
