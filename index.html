@@ -122,14 +122,15 @@
         }
 
         function loadBelanja() {
-            if (localStorage.getItem('terbeli') == null || !list.querySelectorAll('li').length) {
+            if (localStorage.getItem('terbeli') == null) {
                 buyed.style.display = 'none';
             } else {
-                if (list.querySelectorAll('li').length) {
+                if (localStorage.getItem('terbeli') == 0) {
+                    buyed.style.display = 'none';
+                } else {
                     buyed.style.display = 'block';
+                    buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
                 }
-                buyed.style.display = 'block';
-                buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
             }
             
             if (localStorage.getItem('belanjaan') == null) {
