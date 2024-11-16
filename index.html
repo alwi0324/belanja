@@ -62,6 +62,10 @@
               cancelButtonText: "Batal"
             }).then((result) => {
               if (result.isConfirmed) {
+                jdl.innerText = 'Daftar Belanjaan';
+                sembunyi();
+                belanja.innerHTML = '';
+                saveBelanja();
                 Swal.fire({
                   title: "Berhasil!",
                   text: "Daftar belanja telah dibersihkan",
@@ -69,11 +73,6 @@
                 });
               }
             });
-            
-            jdl.innerText = 'Daftar Belanjaan';
-            sembunyi();
-            belanja.innerHTML = '';
-            saveBelanja();
         }
 
         function tambahBelanja(barang) {
