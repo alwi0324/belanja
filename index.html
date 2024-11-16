@@ -50,6 +50,13 @@
             busek.classList.add('hilang');
         }
 
+        function hapus() {
+            jdl.innerText = 'Daftar Belanjaan';
+            sembunyi();
+            belanja.innerHTML = '';
+            saveBelanja();
+        }
+
         function tambahBelanja(barang) {
             let item = document.createElement('li');
             item.classList.add('item');
