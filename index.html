@@ -15,7 +15,7 @@
         <div class="box">
             <div style="margin-bottom: 15px;">
                 <h2>Daftar Belanjaan</h2>
-                <h4 id="buyed"></h4>
+                <h4 id="buyed" class="hilang"></h4>
             </div>
             
             <div id="grocery">
@@ -23,7 +23,8 @@
                 <button id="tambah">Tambahkan</button>
             </div>
         </div>
-        <ol id="belanja"></ol>
+        <ol id="belanja" class="hilang"></ol>
+        <button id="busek" class="box2 hilang" onclick="hapus();">Kosongkan daftar</button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -37,6 +38,17 @@
         writeList.addEventListener('keyup', (e) => {
             if (e.keyCode == 13) {addItem()}
         });
+
+        function muncul() {
+            buyed.classList.remove('hilang');
+            belanja.classList.remove('hilang');
+            busek.classList.remove('hilang');
+        }
+        function sembunyi() {
+            buyed.classList.add('hilang');
+            belanja.classList.add('hilang');
+            busek.classList.add('hilang');
+        }
 
         function tambahBelanja(barang) {
             let item = document.createElement('li');
@@ -85,9 +97,8 @@
                 }
                 jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
                 buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
-                buyed.style.display = 'block';
+                muncul();
                 writeList.value = "";
-                belanja.style.display = 'block';
                 saveBelanja();
             }
             
@@ -108,10 +119,7 @@
             if (e.target.matches(".bi-x-lg")) {
                 e.target.parentElement.parentElement.remove();
                 jdl.innerText = document.querySelectorAll('li').length ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
-                if (!list.querySelectorAll('li').length) {
-                    buyed.style.display = 'none';
-                    belanja.style.display = 'none';
-                }
+                if (!list.querySelectorAll('li').length) {sembunyi()}
                 saveBelanja();
             }
         });
@@ -122,27 +130,25 @@
         }
 
         function loadBelanja() {
-            if (localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length){buyed.style.display = 'none'}
+            if (localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length) {buyed.classList.add('hilang')}
             if (localStorage.getItem('terbeli') == null) {
-                buyed.style.display = 'none';
+                buyed.classList.add('hilang');
             } else {
-                buyed.style.display = 'block';
+                buyed.classList.remove('hilang');
                 buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
             }
             
             if (localStorage.getItem('belanjaan') == null) {
                 jdl.innerText = 'Daftar Belanjaan';
-                belanja.style.display = 'none';
+                belanja.classList.add('hilang');
             } else {
                 belanja.innerHTML = localStorage.getItem('belanjaan');
                 if (localStorage.getItem('belanjaan') != '') {
                     jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-                    buyed.style.display = 'block';
-                    belanja.style.display = 'block';
+                    muncul();
                 } else {
                     jdl.innerText = 'Daftar Belanjaan';
-                    buyed.style.display = 'none';
-                    belanja.style.display = 'none';
+                    sembunyi();
                 }
             }
         }
