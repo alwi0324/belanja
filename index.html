@@ -49,6 +49,16 @@
             belanja.classList.add('hilang');
             busek.classList.add('hilang');
         }
+        
+        function notif(judul, teks, ikon) {
+            swal.fire({
+                title: judul,
+                text: teks,
+                icon: ikon,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        }
 
         function hapus() {
             Swal.fire({
@@ -66,11 +76,7 @@
                 sembunyi();
                 belanja.innerHTML = '';
                 saveBelanja();
-                Swal.fire({
-                  title: "Berhasil!",
-                  text: "Daftar belanja telah dibersihkan",
-                  icon: "success"
-                });
+                notif("Berhasil!", "Daftar belanja telah dibersihkan", "success");
               }
             });
         }
@@ -93,13 +99,7 @@
         function addItem() {
             let data = writeList.value;
             if (data == '') {
-                swal.fire({
-                    title: "Isian Tidak Boleh Kosong!",
-                    text: "",
-                    icon: "error",
-                    timer: 3000,
-                    showConfirmButton: false
-                });
+                notif("Isian Tidak Boleh Kosong!", "", "error");
             } else {
                 if (data.includes(". ")) {
                     let dataNew = data.split(". ").slice(1),
