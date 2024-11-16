@@ -24,7 +24,7 @@
             </div>
         </div>
         <ol id="belanja" class="hilang"></ol>
-        <button id="busek" class="box2 hilang" onclick="hapus();">Kosongkan daftar</button>
+        <button id="busek" class="box2 hilang" onclick="hapus();">Bersihkan daftar</button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -51,6 +51,25 @@
         }
 
         function hapus() {
+            Swal.fire({
+              title: "Apakah Anda Yakin?",
+              text: "Seluruh daftar belanja akan dibersihkan",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Ya, hapus",
+              cancelButtonText: "Batal"
+            }).then((result) => {
+              if (result.isConfirmed) {
+                Swal.fire({
+                  title: "Berhasil!",
+                  text: "Daftar belanja telah dibersihkan",
+                  icon: "success"
+                });
+              }
+            });
+            
             jdl.innerText = 'Daftar Belanjaan';
             sembunyi();
             belanja.innerHTML = '';
