@@ -93,7 +93,11 @@
                 cancelBtn();
                 setTimeout(() => {disappear.remove()}, 7000);
             } else {
-                setTimeout(() => {disappear.remove()}, 10000);
+                setTimeout(() => {
+                    if (document.querySelector(".container").innerHTML.includes("disappear")) {
+                        disappear.remove();
+                    }
+                }, 10000);
             }
         }
 
@@ -175,12 +179,14 @@
                     disappear.style.top = '330px';
                 }
 
-                disappear.addEventListener('click', () => {
-                    list.innerHTML = b4;
-                    jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-                    disappear.classList.add('hilang');
-                    saveBelanja();
-                });
+                if (document.querySelector(".container").innerHTML.includes("disappear")) {
+                    disappear.addEventListener('click', () => {
+                        list.innerHTML = b4;
+                        jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
+                        disappear.classList.add('hilang');
+                        saveBelanja();
+                    });
+                }
 
                 if (!list.querySelectorAll('li').length) {sembunyi()}
                 saveBelanja();
