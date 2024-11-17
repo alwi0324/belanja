@@ -24,7 +24,7 @@
             </div>
         </div>
         <ol id="belanja" class="hilang"></ol>
-        <button id="busek" class="box2 hilang" onclick="hapus();">Bersihkan daftar</button>
+        <div id="busek"></div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -39,15 +39,32 @@
             if (e.keyCode == 13) {addItem()}
         });
 
+        function kopas() {
+            let temp = document.createElement('textarea');
+            document.body.appendChild(temp);
+            
+            let arr = ['Daftar Belanja:\n'];
+            for (let i = 0; i < belanja.querySelectorAll('li').length; i++) {
+                if (belanja.querySelectorAll('li')[i].classList.length != 2) {
+                arr.push(`${i+1}. ${belanja.querySelectorAll('li')[i].innerText}`);
+            } else {
+                arr.push(`${i+1}. ~${belanja.querySelectorAll('li')[i].innerText}~ ✅`);
+            }
+            }
+            
+            temp.value = arr.join('\n');
+            temp.select();
+            document.execCommand("copy");
+            temp.remove();
+            notif("Daftar Belanja Telah Disalin!", "", "success");
+        }
         function muncul() {
             buyed.classList.remove('hilang');
             belanja.classList.remove('hilang');
-            busek.classList.remove('hilang');
         }
         function sembunyi() {
             buyed.classList.add('hilang');
             belanja.classList.add('hilang');
-            busek.classList.add('hilang');
         }
         
         function notif(judul, teks, ikon) {
@@ -74,9 +91,10 @@
               if (result.isConfirmed) {
                 jdl.innerText = 'Daftar Belanjaan';
                 sembunyi();
+                busek.style.display = 'none';
                 belanja.innerHTML = '';
                 saveBelanja();
-                notif("Berhasil!", "Daftar belanja telah dibersihkan", "success");
+                notif("Berhasil!", "Daftar Belanja Telah Dibersihkan", "success");
               }
             });
         }
@@ -143,6 +161,8 @@
                 jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
                 buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
                 muncul();
+                busek.style.display = 'block';
+                busek.innerHTML = `<button class="salinBtn" onclick="kopas();">Salin daftar</button><button class="hapusBtn" onclick="hapus();">Bersihkan daftar</button>`;
                 writeList.value = "";
                 saveBelanja();
             }
@@ -188,7 +208,10 @@
                     });
                 }
 
-                if (!list.querySelectorAll('li').length) {sembunyi()}
+                if (!list.querySelectorAll('li').length) {
+                    sembunyi();
+                    busek.style.display = 'none';
+                }
                 saveBelanja();
             }
         });
@@ -199,17 +222,24 @@
         }
 
         function loadBelanja() {
-            if (localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length) {buyed.classList.add('hilang')}
+            if (localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length) {
+                buyed.classList.add('hilang');
+                busek.style.display = 'none';
+            }
             if (localStorage.getItem('terbeli') == null) {
                 buyed.classList.add('hilang');
+                busek.style.display = 'none';
             } else {
                 buyed.classList.remove('hilang');
                 buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
+                busek.style.display = 'block';
+                busek.innerHTML = `<button class="salinBtn" onclick="kopas();">Salin daftar</button><button class="hapusBtn" onclick="hapus();">Bersihkan daftar</button>`;
             }
             
             if (localStorage.getItem('belanjaan') == null) {
                 jdl.innerText = 'Daftar Belanjaan';
                 belanja.classList.add('hilang');
+                busek.style.display = 'none';
             } else {
                 belanja.innerHTML = localStorage.getItem('belanjaan');
                 if (localStorage.getItem('belanjaan') != '') {
@@ -218,6 +248,7 @@
                 } else {
                     jdl.innerText = 'Daftar Belanjaan';
                     sembunyi();
+                    busek.style.display = 'none';
                 }
             }
         }
