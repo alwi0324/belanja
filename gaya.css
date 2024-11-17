@@ -28,10 +28,12 @@ body {
     padding: 20px;
     box-shadow: 15px 15px 15px rgba(0,0,0,0.1);
 }
-.container .box2 {
+.salinBtn {
     position: relative;
-    width: 400px;
-    background: red;
+    background: #57ccdb;
+}
+.hapusBtn, .salinBtn {
+    width: 50%;
     padding: 12px;
     border: none;
     outline: none;
@@ -39,6 +41,9 @@ body {
     color: #fff;
     font-size: 0.9em;
     font-weight: 500;
+}
+.hapusBtn {
+    background: red;
 }
 .container .box h2 {
     font-size: 1.75em;
@@ -52,7 +57,7 @@ body {
     color: #333;
     text-align: center;
 }
-.container .box #grocery {
+.container .box #grocery, #busek {
     position: relative;
     width: 100%;
     display: flex;
