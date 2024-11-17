@@ -68,7 +68,7 @@
               showCancelButton: true,
               confirmButtonColor: "#d33",
               cancelButtonColor: "#3085d6",
-              confirmButtonText: "Ya, hapus",
+              confirmButtonText: "Ya, bersihkan",
               cancelButtonText: "Batal"
             }).then((result) => {
               if (result.isConfirmed) {
@@ -79,6 +79,22 @@
                 notif("Berhasil!", "Daftar belanja telah dibersihkan", "success");
               }
             });
+        }
+
+        function batal() {
+            function cancelBtn() {
+                let undo = document.createElement('button');
+                undo.setAttribute('id', 'disappear');
+                undo.innerText = 'Undo';
+                document.querySelector(".container").appendChild(undo);
+            }
+
+            if (!document.querySelector(".container").innerHTML.includes("disappear")) {
+                cancelBtn();
+                setTimeout(() => {disappear.remove()}, 7000);
+            } else {
+                setTimeout(() => {disappear.remove()}, 10000);
+            }
         }
 
         function tambahBelanja(barang) {
@@ -142,8 +158,30 @@
                 saveBelanja();
             }
             if (e.target.matches(".bi-x-lg")) {
+                let b4 = list.innerHTML;
                 e.target.parentElement.parentElement.remove();
                 jdl.innerText = document.querySelectorAll('li').length ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
+                if (list.querySelectorAll('li').length) {batal()}
+                if (document.querySelectorAll('li').length == 4) {
+                    disappear.style.top = '480px';
+                }
+                if (document.querySelectorAll('li').length == 3) {
+                    disappear.style.top = '430px';
+                }
+                if (document.querySelectorAll('li').length == 2) {
+                    disappear.style.top = '380px';
+                }
+                if (document.querySelectorAll('li').length == 1) {
+                    disappear.style.top = '330px';
+                }
+
+                disappear.addEventListener('click', () => {
+                    list.innerHTML = b4;
+                    jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
+                    disappear.classList.add('hilang');
+                    saveBelanja();
+                });
+
                 if (!list.querySelectorAll('li').length) {sembunyi()}
                 saveBelanja();
             }
