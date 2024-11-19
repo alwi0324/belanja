@@ -19,7 +19,7 @@
             </div>
             
             <div id="grocery">
-                <input type="text" id="writeList" placeholder="Ketik nama barang di sini..." autocomplete="off">
+                <input type="text" id="writeList" autocomplete="off">
                 <button id="tambah">Tambahkan</button>
             </div>
         </div>
@@ -28,6 +28,23 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Untuk placeholder
+        let pholders = ['Ketik nama barang di sini...', 'Pisahkan dengan koma jika barangnya banyak', 'Klik pada nama barang yang diinginkan untuk mencoret'];
+        function showPlaceHolders() {
+            let i = 0;
+            
+            // Placeholder awal
+            let teks = pholders[i++ % pholders.length]; // modulo
+            writeList.placeholder = teks;
+            
+            // Berubah setiap 3 detik
+            setInterval(() => {
+                let teks = pholders[i++ % pholders.length]; // modulo
+                writeList.placeholder = teks;
+            }, 3000);
+        }
+        showPlaceHolders();
+        
         const isiHapus = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 18 18"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
         const isiDone = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-check2" viewBox="0 0 18 18"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`
 
