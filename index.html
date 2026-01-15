@@ -1,274 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="gaya.css">
-    <link rel="icon" href="cart.jpg" type="image/x-icon">
-    <title>Daftar Belanjaan</title>
-    <meta property="og:title" content="Daftar Belanjaanku">
-    <meta property="og:description" content="List barang yang mau dibeli">
-    <meta property="og:image" itemprop="image" content="cart.jpg">
+    <title>Tagging Lokasi Otomatis</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        #status { font-size: 0.9em; color: #666; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="box">
-            <div style="margin-bottom: 15px;">
-                <h2>Daftar Belanjaan</h2>
-                <h4 id="buyed" class="hilang"></h4>
-            </div>
-            
-            <div id="grocery">
-                <input type="text" id="writeList" autocomplete="off" autofocus>
-                <button id="tambah">Tambahkan</button>
-            </div>
-        </div>
-        <ol id="belanja" class="hilang"></ol>
-        <div id="busek"></div>
+
+    <h2>Tagging Lokasi</h2>
+
+    <div class="form-group">
+        <label for="lat">Latitude (Lintang):</label>
+        <input type="text" id="lat" placeholder="Menunggu data..." readonly>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <div class="form-group">
+        <label for="long">Longitude (Bujur):</label>
+        <input type="text" id="long" placeholder="Menunggu data..." readonly>
+    </div>
+
+    <button onclick="getLocation()">Ambil Lokasi Saat Ini</button>
+    
+    <p id="status"></p>
+
     <script>
-        // Untuk placeholder
-        let pholders = ['Ketik nama barang di sini...', 'Pisahkan dengan koma jika barangnya banyak', 'Klik pada nama barang yang diinginkan untuk mencoret'];
-        function showPlaceHolders() {
-            let i = 0;
-            
-            // Placeholder awal
-            let teks = pholders[i++ % pholders.length]; // modulo
-            writeList.placeholder = teks;
-            
-            // Berubah setiap 3 detik
-            setInterval(() => {
-                let teks = pholders[i++ % pholders.length]; // modulo
-                writeList.placeholder = teks;
-            }, 3000);
-        }
-        showPlaceHolders();
-        
-        const isiHapus = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 18 18"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
-        const isiDone = `<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-check2" viewBox="0 0 18 18"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`
+        const statusDisplay = document.getElementById('status');
+        const latInput = document.getElementById('lat');
+        const longInput = document.getElementById('long');
 
-        let jdl = document.querySelector('h2'),
-            list = document.querySelector('ol');
-
-        tambah.addEventListener('click', addItem);
-        writeList.addEventListener('keyup', (e) => {
-            if (e.keyCode == 13) {addItem()}
-        });
-
-        function kopas() {
-            let temp = document.createElement('textarea');
-            document.body.appendChild(temp);
-            
-            let arr = ['Daftar Belanja:\n'];
-            for (let i = 0; i < belanja.querySelectorAll('li').length; i++) {
-                if (belanja.querySelectorAll('li')[i].classList.length != 2) {
-                arr.push(`${i+1}. ${belanja.querySelectorAll('li')[i].innerText}`);
+        function getLocation() {
+            // Cek apakah browser mendukung Geolocation
+            if (navigator.geolocation) {
+                statusDisplay.innerHTML = "Sedang mencari koordinat...";
+                
+                // Mengambil posisi saat ini
+                navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                    enableHighAccuracy: true, // Menggunakan GPS jika tersedia untuk akurasi tinggi
+                    timeout: 5000,           // Batas waktu pencarian 5 detik
+                    maximumAge: 0            // Selalu ambil data terbaru
+                });
             } else {
-                arr.push(`${i+1}. ~${belanja.querySelectorAll('li')[i].innerText}~ ✅`);
+                statusDisplay.innerHTML = "Maaf, browser Anda tidak mendukung Geolocation.";
             }
-            }
+        }
+
+        function showPosition(position) {
+            // Isi input field dengan hasil koordinat
+            latInput.value = position.coords.latitude;
+            longInput.value = position.coords.longitude;
             
-            temp.value = arr.join('\n');
-            temp.select();
-            document.execCommand("copy");
-            temp.remove();
-            notif("Daftar Belanja Telah Disalin!", "", "success");
-        }
-        function muncul() {
-            buyed.classList.remove('hilang');
-            belanja.classList.remove('hilang');
-        }
-        function sembunyi() {
-            buyed.classList.add('hilang');
-            belanja.classList.add('hilang');
-        }
-        
-        function notif(judul, teks, ikon) {
-            swal.fire({
-                title: judul,
-                text: teks,
-                icon: ikon,
-                timer: 3000,
-                showConfirmButton: false
-            });
+            statusDisplay.innerHTML = "Lokasi berhasil diperbarui!";
+            statusDisplay.style.color = "green";
         }
 
-        function hapus() {
-            Swal.fire({
-              title: "Apakah Anda Yakin?",
-              text: "Seluruh daftar belanja akan dibersihkan",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonColor: "#d33",
-              cancelButtonColor: "#3085d6",
-              confirmButtonText: "Ya, bersihkan",
-              cancelButtonText: "Batal"
-            }).then((result) => {
-              if (result.isConfirmed) {
-                jdl.innerText = 'Daftar Belanjaan';
-                sembunyi();
-                busek.style.display = 'none';
-                belanja.innerHTML = '';
-                saveBelanja();
-                notif("Berhasil!", "Daftar Belanja Telah Dibersihkan", "success");
-              }
-            });
-        }
-
-        function batal() {
-            function cancelBtn() {
-                let undo = document.createElement('button');
-                undo.setAttribute('id', 'disappear');
-                undo.innerText = 'Undo';
-                document.querySelector(".container").appendChild(undo);
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    statusDisplay.innerHTML = "User menolak permintaan lokasi.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    statusDisplay.innerHTML = "Informasi lokasi tidak tersedia.";
+                    break;
+                case error.TIMEOUT:
+                    statusDisplay.innerHTML = "Waktu permintaan habis.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    statusDisplay.innerHTML = "Terjadi kesalahan yang tidak diketahui.";
+                    break;
             }
-
-            if (!document.querySelector(".container").innerHTML.includes("disappear")) {
-                cancelBtn();
-                setTimeout(() => {disappear.remove()}, 7000);
-            } else {
-                setTimeout(() => {
-                    if (document.querySelector(".container").innerHTML.includes("disappear")) {
-                        disappear.remove();
-                    }
-                }, 10000);
-            }
-        }
-
-        function tambahBelanja(barang) {
-            let item = document.createElement('li');
-            item.classList.add('item');
-            item.innerText = `${barang[0].toUpperCase()}${barang.slice(1)}`;
-            list.append(item);
-            delBtn(item);
-        }
-        function delBtn(which) {
-            let rmvBtn = document.createElement('span');
-            rmvBtn.innerHTML = isiHapus;
-            which.append(rmvBtn);
-        }
-
-        loadBelanja();
-
-        function addItem() {
-            let data = writeList.value;
-            if (data == '') {
-                notif("Isian Tidak Boleh Kosong!", "", "error");
-            } else {
-                if (data.includes(". ")) {
-                    let dataNew = data.split(". ").slice(1),
-                        hasil = [];
-                        for (let i = 0; i < dataNew.length-1; i++) {
-                            hasil.push(dataNew[i].slice(0,-2));
-                        }
-                        hasil.push(dataNew[dataNew.length-1]);
-                        hasil.forEach(x => tambahBelanja(x));
-                } else {
-                    if(data.includes(',')) {
-                        let items = data.split(",");
-                        items.forEach(x => {
-                            x = x.trim();
-                            tambahBelanja(x);
-                        });
-                    } else {
-                        tambahBelanja(data.trim());
-                    }
-                }
-                jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-                buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
-                muncul();
-                busek.style.display = 'block';
-                busek.innerHTML = `<button class="salinBtn" onclick="kopas();">Salin daftar</button><button class="hapusBtn" onclick="hapus();">Bersihkan daftar</button>`;
-                writeList.value = "";
-                saveBelanja();
-            }
-            
-        }
-        
-        // Event delegation
-        document.addEventListener('click', e => {
-            if (e.target.matches(".item")) {
-                e.target.classList.toggle('done');
-                buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
-                if(e.target.classList.length == 2) {
-                    e.target.querySelector('span').innerHTML = isiDone;
-                } else {
-                    e.target.querySelector('span').innerHTML = isiHapus;
-                }
-                saveBelanja();
-            }
-            if (e.target.matches(".bi-x-lg")) {
-                let b4 = list.innerHTML;
-                e.target.parentElement.parentElement.remove();
-                jdl.innerText = document.querySelectorAll('li').length ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
-                if (list.querySelectorAll('li').length) {batal()}
-                if (document.querySelectorAll('li').length == 4) {
-                    disappear.style.top = '480px';
-                }
-                if (document.querySelectorAll('li').length == 3) {
-                    disappear.style.top = '430px';
-                }
-                if (document.querySelectorAll('li').length == 2) {
-                    disappear.style.top = '380px';
-                }
-                if (document.querySelectorAll('li').length == 1) {
-                    disappear.style.top = '330px';
-                }
-
-                if (document.querySelector(".container").innerHTML.includes("disappear")) {
-                    disappear.addEventListener('click', () => {
-                        list.innerHTML = b4;
-                        jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-                        disappear.classList.add('hilang');
-                        saveBelanja();
-                    });
-                }
-
-                if (!list.querySelectorAll('li').length) {
-                    sembunyi();
-                    busek.style.display = 'none';
-                }
-                saveBelanja();
-            }
-        });
-
-        function saveBelanja() {
-            localStorage.setItem('belanjaan', belanja.innerHTML);
-            localStorage.setItem('terbeli', list.querySelectorAll('li.done').length);
-        }
-
-        function loadBelanja() {
-            if (localStorage.getItem('terbeli') == '0' || !list.querySelectorAll('li').length) {
-                buyed.classList.add('hilang');
-                busek.style.display = 'none';
-            }
-            if (localStorage.getItem('terbeli') == null) {
-                buyed.classList.add('hilang');
-                busek.style.display = 'none';
-            } else {
-                buyed.classList.remove('hilang');
-                buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
-                busek.style.display = 'block';
-                busek.innerHTML = `<button class="salinBtn" onclick="kopas();">Salin daftar</button><button class="hapusBtn" onclick="hapus();">Bersihkan daftar</button>`;
-            }
-            
-            if (localStorage.getItem('belanjaan') == null) {
-                jdl.innerText = 'Daftar Belanjaan';
-                belanja.classList.add('hilang');
-                busek.style.display = 'none';
-            } else {
-                belanja.innerHTML = localStorage.getItem('belanjaan');
-                if (localStorage.getItem('belanjaan') != '') {
-                    jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-                    muncul();
-                } else {
-                    jdl.innerText = 'Daftar Belanjaan';
-                    sembunyi();
-                    busek.style.display = 'none';
-                }
-            }
+            statusDisplay.style.color = "red";
         }
     </script>
+
 </body>
 </html>
