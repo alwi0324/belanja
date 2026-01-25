@@ -2,15 +2,26 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Tagging Lokasi Otomatis</title>
+    <title>Tagging Lokasi Otomatis & Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { font-family: sans-serif; margin: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; }
         input { padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
         button:hover { background-color: #218838; }
         #status { font-size: 0.9em; color: #666; margin-top: 10px; }
+        
+        /* Ukuran Map */
+        #map { 
+            height: 400px; 
+            width: 100%; 
+            max-width: 600px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -27,25 +38,69 @@
         <input type="text" id="long" placeholder="Menunggu data..." readonly>
     </div>
 
-    <button onclick="getLocation()">Ambil Lokasi Saat Ini</button>
+    <button onclick="getLocation()">Ambil Lokasi Saat Ini (GPS)</button>
     
-    <p id="status"></p>
+    <p id="status">Gunakan tombol di atas atau klik langsung pada peta untuk menentukan lokasi.</p>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         const statusDisplay = document.getElementById('status');
         const latInput = document.getElementById('lat');
         const longInput = document.getElementById('long');
 
+        // 1. Inisialisasi Peta (Default ke Indonesia secara umum)
+        const defaultLat = -2.5489;
+        const defaultLong = 118.0149;
+        const map = L.map('map').setView([defaultLat, defaultLong], 5);
+
+        // Tambahkan layer peta (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 2. Tambahkan Marker yang bisa digeser (draggable)
+        let marker = L.marker([defaultLat, defaultLong], {
+            draggable: true
+        }).addTo(map);
+
+        // Fungsi untuk memperbarui input teks berdasarkan koordinat
+        function updateInputs(lat, lng) {
+            latInput.value = lat.toFixed(7);
+            longInput.value = lng.toFixed(7);
+        }
+
+        // Event saat marker selesai digeser
+        marker.on('dragend', function (e) {
+            const position = marker.getLatLng();
+            updateInputs(position.lat, position.lng);
+            statusDisplay.innerHTML = "Lokasi diperbarui melalui pin.";
+            statusDisplay.style.color = "blue";
+        });
+
+        // Event saat peta diklik di mana saja
+        map.on('click', function (e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            marker.setLatLng([lat, lng]); // Pindahkan marker
+            updateInputs(lat, lng);        // Update input
+            statusDisplay.innerHTML = "Lokasi diperbarui melalui klik peta.";
+            statusDisplay.style.color = "blue";
+        });
+
+        // Fungsi GPS (Bawaan skrip Anda sebelumnya)
         function getLocation() {
-            // Cek apakah browser mendukung Geolocation
             if (navigator.geolocation) {
                 statusDisplay.innerHTML = "Sedang mencari koordinat...";
+                statusDisplay.style.color = "#666";
                 
-                // Mengambil posisi saat ini
                 navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                    enableHighAccuracy: true, // Menggunakan GPS jika tersedia untuk akurasi tinggi
-                    timeout: 5000,           // Batas waktu pencarian 5 detik
-                    maximumAge: 0            // Selalu ambil data terbaru
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
                 });
             } else {
                 statusDisplay.innerHTML = "Maaf, browser Anda tidak mendukung Geolocation.";
@@ -53,30 +108,29 @@
         }
 
         function showPosition(position) {
-            // Isi input field dengan hasil koordinat
-            latInput.value = position.coords.latitude;
-            longInput.value = position.coords.longitude;
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            latInput.value = lat;
+            longInput.value = lng;
             
-            statusDisplay.innerHTML = "Lokasi berhasil diperbarui!";
+            // Pindahkan posisi peta dan marker ke lokasi GPS
+            map.setView([lat, lng], 15);
+            marker.setLatLng([lat, lng]);
+
+            statusDisplay.innerHTML = "Lokasi berhasil ditemukan via GPS!";
             statusDisplay.style.color = "green";
         }
 
         function showError(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    statusDisplay.innerHTML = "User menolak permintaan lokasi.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    statusDisplay.innerHTML = "Informasi lokasi tidak tersedia.";
-                    break;
-                case error.TIMEOUT:
-                    statusDisplay.innerHTML = "Waktu permintaan habis.";
-                    break;
-                case error.UNKNOWN_ERROR:
-                    statusDisplay.innerHTML = "Terjadi kesalahan yang tidak diketahui.";
-                    break;
-            }
+            // ... (Fungsi error tetap sama seperti kode Anda)
             statusDisplay.style.color = "red";
+            switch(error.code) {
+                case error.PERMISSION_DENIED: statusDisplay.innerHTML = "User menolak permintaan lokasi."; break;
+                case error.POSITION_UNAVAILABLE: statusDisplay.innerHTML = "Informasi lokasi tidak tersedia."; break;
+                case error.TIMEOUT: statusDisplay.innerHTML = "Waktu permintaan habis."; break;
+                default: statusDisplay.innerHTML = "Terjadi kesalahan."; break;
+            }
         }
     </script>
 
