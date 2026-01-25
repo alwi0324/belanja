@@ -133,12 +133,11 @@
         }
 
         // Fungsi untuk memindahkan marker berdasarkan angka yang diketik di input
-        function updateMarkerFromInput() {
-            const lat = parseFloat(latInput.value);
-            const lng = parseFloat(longInput.value);
-        
+        function updateMarkerFromInput(lat, long) {
             // Validasi: Pastikan input adalah angka dan dalam rentang koordinat yang valid
-            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            if (!isNaN(parseFloat(lat)) && !isNaN(parseFloat(long)) &&
+                parseFloat(lat) >= -90 && parseFloat(lat) <= 90 &&
+                parseFloat(long) >= -180 && parseFloat(long) <= 180) {
                 const newLatLng = new L.LatLng(lat, lng);
                 marker.setLatLng(newLatLng); // Geser marker
                 map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
@@ -147,9 +146,6 @@
                 statusDisplay.style.color = "purple";
             }
         }
-
-        latInput.addEventListener('change', updateMarkerFromInput);
-        longInput.addEventListener('change', updateMarkerFromInput);
 
         // Fungsi untuk memisahkan latitude dan longitudenya langsung
         latInput.addEventListener('change', () => {
@@ -160,27 +156,28 @@
                 let latVal = parseFloat(koord[0]);
                 let longVal = parseFloat(koord[1]);
 
-                console.log('latitude: ',latVal)
-                console.log('longitude: ',longVal)
+                // Validasi
+                if (!isNaN(latVal) && !isNaN(longVal) && 
+                    latVal >= -90 && latVal <= 90 && 
+                    longVal >= -180 && longVal <= 180) {
+                    const newLatLng = new L.LatLng(latVal, longVal);
+                    marker.setLatLng(newLatLng); // Geser marker
+                    map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
+                    
+                    statusDisplay.innerHTML = "Marker digeser berdasarkan copy paste.";
+                    statusDisplay.style.color = "purple";
+                }
             } else {
-                updateMarkerFromInput();
+                updateMarkerFromInput(latInput.value, longInput.value);
             }
 
-            // Validasi
-            // if (!isNaN(latVal) && !isNaN(longVal) && 
-            //     latVal >= -90 && latVal <= 90 && 
-            //     longVal >= -180 && longVal <= 180) {
-            //     const newLatLng = new L.LatLng(latVal, longVal);
-            //     marker.setLatLng(newLatLng); // Geser marker
-            //     map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
-                
-            //     statusDisplay.innerHTML = "Marker digeser berdasarkan copy paste.";
-            //     statusDisplay.style.color = "purple";
-            // }
         });
+
+        longInput.addEventListener('change', updateMarkerFromInput(latInput.value, longInput.value));
     </script>
 
 </body>
 </html>
+
 
 
