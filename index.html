@@ -15,9 +15,9 @@
         
         /* Ukuran Map */
         #map { 
-            height: 400px; 
+            height: 300px; 
             width: 100%; 
-            max-width: 600px; 
+            max-width: 500px; 
             border-radius: 8px; 
             border: 1px solid #ccc;
             margin-top: 15px;
@@ -160,6 +160,11 @@
                 if (!isNaN(latVal) && !isNaN(longVal) && 
                     latVal >= -90 && latVal <= 90 && 
                     longVal >= -180 && longVal <= 180) {
+
+                    // Set input di lat long
+                    latInput.value = latVal;
+                    longInput.value = longVal;
+                    
                     const newLatLng = new L.LatLng(latVal, longVal);
                     marker.setLatLng(newLatLng); // Geser marker
                     map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
@@ -178,6 +183,7 @@
 
 </body>
 </html>
+
 
 
 
