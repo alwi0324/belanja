@@ -30,12 +30,12 @@
 
     <div class="form-group">
         <label for="lat">Latitude (Lintang):</label>
-        <input type="number" id="lat" step="any" placeholder="Masukkan latitude...">
+        <input type="text" id="lat" placeholder="Masukkan latitude...">
     </div>
 
     <div class="form-group">
         <label for="long">Longitude (Bujur):</label>
-        <input type="number" id="long" step="any" placeholder="Masukkan longitude...">
+        <input type="text" id="long" placeholder="Masukkan longitude...">
     </div>
 
     <button onclick="getLocation()">Ambil Lokasi Saat Ini (GPS)</button>
@@ -51,9 +51,9 @@
         const latInput = document.getElementById('lat');
         const longInput = document.getElementById('long');
 
-        // 1. Inisialisasi Peta (Default ke Indonesia secara umum)
-        const defaultLat = -2.5489;
-        const defaultLong = 118.0149;
+        // 1. Inisialisasi Peta
+        const defaultLat = -8.5369965;
+        const defaultLong = 118.4635260;
         const map = L.map('map').setView([defaultLat, defaultLong], 5);
 
         // Tambahkan layer peta (OpenStreetMap)
@@ -153,25 +153,34 @@
 
         // Fungsi untuk memisahkan latitude dan longitudenya langsung
         latInput.addEventListener('change', () => {
-            // Pisah berdasarkan koma
-            let koord = latInput.value.split(', ');
-            latInput.value = parseFloat(koord[0]);
-            longInput.value = parseFloat(koord[1]);
+            // Apakah latitude ada komanya
+            if (latInput.value.includes(', ')) {
+                // Pisah berdasarkan koma
+                let koord = latInput.value.split(', ');
+                let latVal = parseFloat(koord[0]);
+                let longVal = parseFloat(koord[1]);
+
+                console.log('latitude: ',latVal)
+                console.log('longitude: ',longVal)
+            } else {
+                updateMarkerFromInput();
+            }
 
             // Validasi
-            if (!isNaN(latInput.value) && !isNaN(lng) && 
-                latInput.value >= -90 && latInput.value <= 90 && 
-                longInput.value >= -180 && longInput.value <= 180) {
-                const newLatLng = new L.LatLng(latInput.value, longInput.value);
-                marker.setLatLng(newLatLng); // Geser marker
-                map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
+            // if (!isNaN(latVal) && !isNaN(longVal) && 
+            //     latVal >= -90 && latVal <= 90 && 
+            //     longVal >= -180 && longVal <= 180) {
+            //     const newLatLng = new L.LatLng(latVal, longVal);
+            //     marker.setLatLng(newLatLng); // Geser marker
+            //     map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
                 
-                statusDisplay.innerHTML = "Marker digeser berdasarkan copy paste.";
-                statusDisplay.style.color = "purple";
-            }
+            //     statusDisplay.innerHTML = "Marker digeser berdasarkan copy paste.";
+            //     statusDisplay.style.color = "purple";
+            // }
         });
     </script>
 
 </body>
 </html>
+
 
