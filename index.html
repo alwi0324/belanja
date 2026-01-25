@@ -30,12 +30,12 @@
 
     <div class="form-group">
         <label for="lat">Latitude (Lintang):</label>
-        <input type="text" id="lat" placeholder="Menunggu data..." readonly>
+        <input type="number" id="lat" step="any" placeholder="Masukkan latitude...">
     </div>
 
     <div class="form-group">
         <label for="long">Longitude (Bujur):</label>
-        <input type="text" id="long" placeholder="Menunggu data..." readonly>
+        <input type="number" id="long" step="any" placeholder="Masukkan longitude...">
     </div>
 
     <button onclick="getLocation()">Ambil Lokasi Saat Ini (GPS)</button>
@@ -123,7 +123,6 @@
         }
 
         function showError(error) {
-            // ... (Fungsi error tetap sama seperti kode Anda)
             statusDisplay.style.color = "red";
             switch(error.code) {
                 case error.PERMISSION_DENIED: statusDisplay.innerHTML = "User menolak permintaan lokasi."; break;
@@ -132,7 +131,47 @@
                 default: statusDisplay.innerHTML = "Terjadi kesalahan."; break;
             }
         }
+
+        // Fungsi untuk memindahkan marker berdasarkan angka yang diketik di input
+        function updateMarkerFromInput() {
+            const lat = parseFloat(latInput.value);
+            const lng = parseFloat(longInput.value);
+        
+            // Validasi: Pastikan input adalah angka dan dalam rentang koordinat yang valid
+            if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                const newLatLng = new L.LatLng(lat, lng);
+                marker.setLatLng(newLatLng); // Geser marker
+                map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
+                
+                statusDisplay.innerHTML = "Marker digeser berdasarkan input manual.";
+                statusDisplay.style.color = "purple";
+            }
+        }
+
+        latInput.addEventListener('change', updateMarkerFromInput);
+        longInput.addEventListener('change', updateMarkerFromInput);
+
+        // Fungsi untuk memisahkan latitude dan longitudenya langsung
+        latInput.addEventListener('change', () => {
+            // Pisah berdasarkan koma
+            let koord = latInput.value.split(', ');
+            latInput.value = parseFloat(koord[0]);
+            longInput.value = parseFloat(koord[1]);
+
+            // Validasi
+            if (!isNaN(latInput.value) && !isNaN(lng) && 
+                latInput.value >= -90 && latInput.value <= 90 && 
+                longInput.value >= -180 && longInput.value <= 180) {
+                const newLatLng = new L.LatLng(latInput.value, longInput.value);
+                marker.setLatLng(newLatLng); // Geser marker
+                map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
+                
+                statusDisplay.innerHTML = "Marker digeser berdasarkan copy paste.";
+                statusDisplay.style.color = "purple";
+            }
+        });
     </script>
 
 </body>
 </html>
+
