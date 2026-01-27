@@ -2,190 +2,68 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Tagging Lokasi Otomatis & Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input { padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
-        button:hover { background-color: #218838; }
-        #status { font-size: 0.9em; color: #666; margin-top: 10px; }
-        
-        /* Ukuran Map */
-        #map { 
-            height: 300px; 
-            width: 100%; 
-            max-width: 500px; 
-            border-radius: 8px; 
-            border: 1px solid #ccc;
-            margin-top: 15px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="getSheetData.js"></script>
+    <script type="module" src="script.js" defer></script>
+    <title>Ground Check SBR 2026</title>
+    <link rel="stylesheet" href="setel.css">
 </head>
 <body>
 
-    <h2>Tagging Lokasi</h2>
+    <h1>Ground Check SBR 2026</h1>
 
-    <div class="form-group">
-        <label for="lat">Latitude (Lintang):</label>
-        <input type="text" id="lat" placeholder="Masukkan latitude...">
+    <div class="filter-container">
+        <div class="row">
+            <div class="form-group">
+                <label for="kecamatan">Kecamatan</label>
+                <select id="kecamatan" name="kecamatan">
+                    <option value="">--- Silakan pilih ---</option>
+                    <option value="010">HU'U</option>
+                    <option value="011">PAJO</option>
+                    <option value="020">DOMPU</option>
+                    <option value="030">WOJA</option>
+                    <option value="040">KILO</option>
+                    <option value="050">KEMPO</option>
+                    <option value="051">MANGGALEWA</option>
+                    <option value="060">PEKAT</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="desa">Desa/Kel</label>
+                <select id="desa" name="desa" disabled></select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label for="nama_usaha">Nama/Kegiatan Usaha/IDSBR</label>
+                <input type="text" id="nama_usaha" name="nama_usaha" placeholder="Ketik nama/kegiatan usaha/IDSBR" readonly>
+            </div>
+            <div class="form-group">
+                <label for="status_usaha">Status Usaha</label>
+                <select id="status_usaha" name="status_usaha" disabled>
+                    <option value="">--- Semua ---</option>
+                    <option>Aktif</option>
+                    <option>Tutup</option>
+                    <option>Tidak Ditemukan</option>
+                    <option>Lainnya</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <button class="btn-submit">Filter</button>
+        </div>
+    </div>
+    <br>
+    <div class="detail-hidden">
+        <p style="text-align: center; font-weight: bold;">Maaf, usaha tidak ditemukan atau sudah pernah di-<i>ground check</i></p>
     </div>
 
-    <div class="form-group">
-        <label for="long">Longitude (Bujur):</label>
-        <input type="text" id="long" placeholder="Masukkan longitude...">
-    </div>
+    <div class="kueri-all detail-hidden"></div>
 
-    <button onclick="getLocation()">Ambil Lokasi Saat Ini (GPS)</button>
-    
-    <p id="status">Gunakan tombol di atas atau klik langsung pada peta untuk menentukan lokasi.</p>
-
-    <div id="map"></div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        const statusDisplay = document.getElementById('status');
-        const latInput = document.getElementById('lat');
-        const longInput = document.getElementById('long');
-
-        // 1. Inisialisasi Peta
-        const defaultLat = -8.5369965;
-        const defaultLong = 118.4635260;
-        const map = L.map('map').setView([defaultLat, defaultLong], 15);
-
-        // Tambahkan layer peta (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-
-        // 2. Tambahkan Marker yang bisa digeser (draggable)
-        let marker = L.marker([defaultLat, defaultLong], {
-            draggable: true
-        }).addTo(map);
-
-        // Fungsi untuk memperbarui input teks berdasarkan koordinat
-        function updateInputs(lat, lng) {
-            latInput.value = lat.toFixed(7);
-            longInput.value = lng.toFixed(7);
-        }
-
-        // Event saat marker selesai digeser
-        marker.on('dragend', function (e) {
-            const position = marker.getLatLng();
-            updateInputs(position.lat, position.lng);
-            statusDisplay.innerHTML = "Lokasi diperbarui melalui pin.";
-            statusDisplay.style.color = "blue";
-        });
-
-        // Event saat peta diklik di mana saja
-        map.on('click', function (e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-            
-            marker.setLatLng([lat, lng]); // Pindahkan marker
-            updateInputs(lat, lng);        // Update input
-            statusDisplay.innerHTML = "Lokasi diperbarui melalui klik peta.";
-            statusDisplay.style.color = "blue";
-        });
-
-        // Fungsi GPS (Bawaan skrip Anda sebelumnya)
-        function getLocation() {
-            if (navigator.geolocation) {
-                statusDisplay.innerHTML = "Sedang mencari koordinat...";
-                statusDisplay.style.color = "#666";
-                
-                navigator.geolocation.getCurrentPosition(showPosition, showError, {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                });
-            } else {
-                statusDisplay.innerHTML = "Maaf, browser Anda tidak mendukung Geolocation.";
-            }
-        }
-
-        function showPosition(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            latInput.value = lat;
-            longInput.value = lng;
-            
-            // Pindahkan posisi peta dan marker ke lokasi GPS
-            map.setView([lat, lng], 15);
-            marker.setLatLng([lat, lng]);
-
-            statusDisplay.innerHTML = "Lokasi berhasil ditemukan via GPS!";
-            statusDisplay.style.color = "green";
-        }
-
-        function showError(error) {
-            statusDisplay.style.color = "red";
-            switch(error.code) {
-                case error.PERMISSION_DENIED: statusDisplay.innerHTML = "User menolak permintaan lokasi."; break;
-                case error.POSITION_UNAVAILABLE: statusDisplay.innerHTML = "Informasi lokasi tidak tersedia."; break;
-                case error.TIMEOUT: statusDisplay.innerHTML = "Waktu permintaan habis."; break;
-                default: statusDisplay.innerHTML = "Terjadi kesalahan."; break;
-            }
-        }
-
-        // Fungsi untuk memindahkan marker berdasarkan angka yang diketik di input
-        function updateMarkerFromInput(lat, long) {
-            // Validasi: Pastikan input adalah angka dan dalam rentang koordinat yang valid
-            if (!isNaN(parseFloat(lat)) && !isNaN(parseFloat(long)) &&
-                parseFloat(lat) >= -90 && parseFloat(lat) <= 90 &&
-                parseFloat(long) >= -180 && parseFloat(long) <= 180) {
-                const newLatLng = new L.LatLng(parseFloat(lat), parseFloat(long));
-                marker.setLatLng(newLatLng); // Geser marker
-                map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
-                
-                statusDisplay.innerHTML = "Marker digeser berdasarkan input manual.";
-                statusDisplay.style.color = "purple";
-            }
-        }
-
-        // Fungsi untuk memisahkan latitude dan longitudenya langsung
-        latInput.addEventListener('change', () => {
-            // Apakah latitude ada komanya
-            if (latInput.value.includes(', ')) {
-                // Pisah berdasarkan koma
-                let koord = latInput.value.split(', ');
-                let latVal = parseFloat(koord[0]);
-                let longVal = parseFloat(koord[1]);
-
-                // Validasi
-                if (!isNaN(latVal) && !isNaN(longVal) && 
-                    latVal >= -90 && latVal <= 90 && 
-                    longVal >= -180 && longVal <= 180) {
-
-                    // Set input di lat long
-                    latInput.value = latVal;
-                    longInput.value = longVal;
-                    
-                    const newLatLng = new L.LatLng(latVal, longVal);
-                    marker.setLatLng(newLatLng); // Geser marker
-                    map.panTo(newLatLng);        // Geser tampilan peta ke titik tersebut
-                    
-                    statusDisplay.innerHTML = "Marker digeser berdasarkan copy paste.";
-                    statusDisplay.style.color = "purple";
-                }
-            } else {
-                updateMarkerFromInput(latInput.value, longInput.value);
-            }
-
-        });
-
-        longInput.addEventListener('change', updateMarkerFromInput(latInput.value, longInput.value));
-    </script>
 
 </body>
 </html>
-
-
-
-
-
-
