@@ -185,7 +185,7 @@ const usahaHandler = (data) => {
                                 }).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Lokasi salah', 'error', `Lokasi usaha ini ada di: ${targetDesa.properties.nmdesa}`);
+                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.slice(1)}`);
                                     }
                                 });
                                 
@@ -447,4 +447,5 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
