@@ -183,7 +183,7 @@ const usahaHandler = (data) => {
                 // Validasi: ditemukan tapi gak ada koordinat
                 if (hasilGc[i].value == 3 && (latInput[i].value == '' || longInput[i].value == '')) {
                     notif('Gagal mengirim data', 'error', 'Jika status usahanya ditemukan harus ada koordinat');
-                } else if (latInput[i].value != '' && longInput[i].value != '') {
+                } else if (hasilGc[i].value == 3 && latInput[i].value != '' && longInput[i].value != '') {
                     // Lokasinya gak pas
                     fetch('https://raw.githubusercontent.com/alwi0324/belanja/refs/heads/main/desa_non%20sls_turf.geojson')
                         .then(res => res.json())
@@ -209,7 +209,7 @@ const usahaHandler = (data) => {
                                 }).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
+                                        notif('Lokasi salah', 'error', `Lokasi usaha ini ada di: ${targetDesa.properties.nmdesa}`);
                                     }
                                 });
                                 
@@ -218,15 +218,15 @@ const usahaHandler = (data) => {
                                     .then(response => response.json())
                                     .then(response => {
                                         Swal.fire({
-                                    title: 'Mengirim Data...',
-                                    text: 'Mohon tunggu sebentar',
-                                    icon: 'info',
-                                    timer: 2500,
-                                    timerProgressBar: true,
-                                    showConfirmButton: false,
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                    Swal.showLoading(); // Menampilkan spinner loading
+                                        title: 'Mengirim Data...',
+                                        text: 'Mohon tunggu sebentar',
+                                        icon: 'info',
+                                        timer: 2500,
+                                        timerProgressBar: true,
+                                        showConfirmButton: false,
+                                        allowOutsideClick: false,
+                                        didOpen: () => {
+                                        Swal.showLoading(); // Menampilkan spinner loading
                                     }
                                 }).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
@@ -236,10 +236,36 @@ const usahaHandler = (data) => {
                                     }
                                 });
                                     })
-                                    .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'))
-                            }
+                                    .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
+                                }
+                                
+                            });
                             
-                        });
+                        } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
+                            // Tutup/Tidak ditemukan/ganda
+                            fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                                .then(response => response.json())
+                                .then(response => {
+                                    Swal.fire({
+                                    title: 'Mengirim Data...',
+                                    text: 'Mohon tunggu sebentar',
+                                    icon: 'info',
+                                    timer: 2500,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                    Swal.showLoading(); // Menampilkan spinner loading
+                                }
+                            }).then((result) => {
+                                // Tampilkan Pop-up Sukses setelah timer habis
+                                if (result.dismiss === Swal.DismissReason.timer) {
+                                    notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
+                                    filterUsaha();
+                                }
+                            });
+                                })
+                                .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
 
                 }
             })
@@ -444,7 +470,3 @@ tombolFilter.addEventListener('click', () => {
     filterUsaha();
 
 });
-
-
-
-
