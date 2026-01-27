@@ -197,16 +197,16 @@ const usahaHandler = (data) => {
                             if (!status) {
                                 let timerInterval;
                                 swal.fire({
-                                  title: "Lokasi salah!",
-                                  text: `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`,
-                                  icon: 'error',
+                                  title: "Mengirim data",
+                                  text: `Silakan tunggu...`,
+                                  icon: 'info',
                                   timer: 2000,
                                   timerProgressBar: true,
                                   didOpen: () => {
                                     swal.showLoading();
                                   }
                                 });
-                                // notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
+                                notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
                             } else {
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
@@ -422,4 +422,5 @@ tombolFilter.addEventListener('click', () => {
     filterUsaha();
 
 });
+
 
