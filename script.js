@@ -185,7 +185,7 @@ const usahaHandler = (data) => {
                     notif('Gagal mengirim data', 'error', 'Jika status usahanya ditemukan harus ada koordinat');
                 } else if (latInput[i].value != '' && longInput[i].value != '') {
                     // Lokasinya gak pas
-                    fetch('assets/desa_non sls_turf.geojson')
+                    fetch('desa_non sls_turf.geojson')
                         .then(res => res.json())
                         .then(dataSf => {
                             let poly = dataSf.features;
@@ -409,4 +409,5 @@ function filterUsaha() {
 
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
+
 });
