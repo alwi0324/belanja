@@ -206,7 +206,9 @@ const usahaHandler = (data) => {
                                     swal.showLoading();
                                   }
                                 });
-                                notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
+                                setTimeout(() => {
+                                    notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
+                                }, 2500);
                             } else {
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
@@ -422,5 +424,6 @@ tombolFilter.addEventListener('click', () => {
     filterUsaha();
 
 });
+
 
 
