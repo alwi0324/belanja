@@ -1,13 +1,5 @@
 import booleanPointInPolygon from 'https://cdn.jsdelivr.net/npm/@turf/boolean-point-in-polygon@6.5.0/+esm';
 import { point } from 'https://cdn.jsdelivr.net/npm/@turf/helpers@6.5.0/+esm';
-
-// Nama-nama groundchecker
-let gchekers = ['--- Silakan pilih ---', 'ahwan', 'abdul.farid', 'aditya.dwi', 'agung.yuniarta', 'anggraeni.mutyasari', 'bimo.asari', 'bonnyleo',
-    'chumaidi.rahman', 'delva.budi', 'dewiutari', 'emaliahirma', 'emasyulyanti', 'erwin.muspian', 'fahir', 'hernandanovi-pppk',
-    'ikhlas-pppk', 'iksan2', 'inas.satira', 'indradwi', 'ismail4', 'iswahyudin-pppk', 'mardiati2', 'maulana.rizki', 'miftahur.rahim',
-    'muhammad.ali', 'muhlis3', 'nabila.lestari', 'nurfitriati', 'octavianus.yakobus', 'rianbarenito', 'rijal-pppk', 'rita3',
-    'salsapuspita', 'sukriawan-pppk', 'suwardin', 'syarifu-pppk', 'wahyuda.manik'];
-
 const scriptURL = 'https://script.google.com/macros/s/AKfycbzWiSWbCodiwpEpnwJRlltQP-m4kGPy8XgVidtD4q5WZUlswFIO0sSnlv0r7B9EIwM/exec';
 
 // Sweet Alert
@@ -100,14 +92,6 @@ const usahaHandler = (data) => {
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="row">
-                        <div class="form-group">
-                            <label>Groundchecker</label>
-                            <select name="gchecker"></select>
-                        </div>
-                    </div>
-        
                     <button type="submit" class="btn-submit">Simpan Data</button>
                 </form>
             </div>
@@ -118,18 +102,9 @@ const usahaHandler = (data) => {
 
         kueriAll.innerHTML = hasilEstablishments.join('');
 
-        // Kasih jeda 1,5 detik
-        setTimeout(() => {
-            let groundcheckers = document.querySelectorAll('select[name="gchecker"]');
-            groundcheckers.forEach((groundchecker, idx) => {
-                groundchecker.innerHTML = gchekers.map(e => `<option>${e}</option>`).join('');
-            });
-        }, 1500);
-
         // Fungsi Toggle Buka/Tutup Card
         const cards = document.querySelectorAll('.hasil');
         cards.forEach((card, index) => {
-
             // Pasang Event Listener KLIK pada Card
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper')) return;
@@ -175,6 +150,7 @@ const usahaHandler = (data) => {
         // Fungsi untuk mengirim form ke google sheet
         let gcForms = document.querySelectorAll('form');
         let hasilGc = document.querySelectorAll('select[name="hasilgc"]');
+        let b = document.querySelectorAll('.btn-submit');
 
         gcForms.forEach((form, i) => {
             form.addEventListener('submit', (e) => {
@@ -217,6 +193,7 @@ const usahaHandler = (data) => {
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
                                     .then(response => {
+                                        b[i+1].style.display = 'none'
                                         Swal.fire({
                                         title: 'Mengirim Data...',
                                         text: 'Mohon tunggu sebentar',
@@ -246,6 +223,7 @@ const usahaHandler = (data) => {
                             fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                 .then(response => response.json())
                                 .then(response => {
+                                    b[i+1].style.display = 'none'
                                     Swal.fire({
                                     title: 'Mengirim Data...',
                                     text: 'Mohon tunggu sebentar',
@@ -468,5 +446,5 @@ function filterUsaha() {
 
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
-
 });
+
