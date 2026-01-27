@@ -195,26 +195,46 @@ const usahaHandler = (data) => {
                             let status = booleanPointInPolygon(pinPoint, targetDesa);
 
                             if (!status) {
-                                let timerInterval;
-                                swal.fire({
-                                  title: "Mengirim data",
-                                  text: `Silakan tunggu...`,
-                                  icon: 'info',
-                                  timer: 2000,
-                                  timerProgressBar: true,
-                                  didOpen: () => {
-                                    swal.showLoading();
-                                  }
+                                Swal.fire({
+                                    title: 'Mengirim Data...',
+                                    text: 'Mohon tunggu sebentar',
+                                    icon: 'info',
+                                    timer: 2500,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                    Swal.showLoading(); // Menampilkan spinner loading
+                                    }
+                                }).then((result) => {
+                                    // Tampilkan Pop-up Sukses setelah timer habis
+                                    if (result.dismiss === Swal.DismissReason.timer) {
+                                        notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
+                                    }
                                 });
-                                setTimeout(() => {
-                                    notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
-                                }, 2500);
+                                
                             } else {
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
                                     .then(response => {
+                                        Swal.fire({
+                                    title: 'Mengirim Data...',
+                                    text: 'Mohon tunggu sebentar',
+                                    icon: 'info',
+                                    timer: 2500,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                    Swal.showLoading(); // Menampilkan spinner loading
+                                    }
+                                }).then((result) => {
+                                    // Tampilkan Pop-up Sukses setelah timer habis
+                                    if (result.dismiss === Swal.DismissReason.timer) {
                                         notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
                                         filterUsaha();
+                                    }
+                                });
                                     })
                                     .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'))
                             }
@@ -424,6 +444,7 @@ tombolFilter.addEventListener('click', () => {
     filterUsaha();
 
 });
+
 
 
 
