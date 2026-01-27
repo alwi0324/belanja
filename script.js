@@ -185,7 +185,7 @@ const usahaHandler = (data) => {
                     notif('Gagal mengirim data', 'error', 'Jika status usahanya ditemukan harus ada koordinat');
                 } else if (latInput[i].value != '' && longInput[i].value != '') {
                     // Lokasinya gak pas
-                    fetch('desa_non sls_turf.geojson')
+                    fetch('https://raw.githubusercontent.com/alwi0324/belanja/refs/heads/main/desa_non%20sls_turf.geojson')
                         .then(res => res.json())
                         .then(dataSf => {
                             let poly = dataSf.features;
@@ -195,7 +195,18 @@ const usahaHandler = (data) => {
                             let status = booleanPointInPolygon(pinPoint, targetDesa);
 
                             if (!status) {
-                                notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
+                                let timerInterval;
+                                swal.fire({
+                                  title: "Lokasi salah!",
+                                  text: `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`,
+                                  icon: 'error',
+                                  timer: 2000,
+                                  timerProgressBar: true,
+                                  didOpen: () => {
+                                    swal.showLoading();
+                                  }
+                                });
+                                // notif('Lokasi salah', 'error', `Silakan tagging lokasi usaha di: ${targetDesa.properties.nmdesa}`);
                             } else {
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
@@ -411,3 +422,4 @@ tombolFilter.addEventListener('click', () => {
     filterUsaha();
 
 });
+
