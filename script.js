@@ -173,8 +173,6 @@ const usahaHandler = (data) => {
             // Pasang Event Listener pada Input (Live Update)
             inputLat.addEventListener('input', updateMarkerFromInput);
             inputLng.addEventListener('input', updateMarkerFromInput);
-            inputLat.addEventListener('change', updateMarkerFromInput);
-            inputLng.addEventListener('change', updateMarkerFromInput);
             
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper') || e.target.closest('.btn-location')) return;
@@ -203,48 +201,31 @@ const usahaHandler = (data) => {
                                 attribution: '&copy; OpenStreetMap contributors'
                             }).addTo(map);
 
-                            // Cek Input
-                            const hasInput = inputLat.value !== "" && inputLng.value !== "";
-                            if (hasInput) {
-                                // Buat marker
-                                const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
-                                
-                                // Simpan Instance Map & Marker ke Elemen HTML
-                                mapContainer.mapInstance = marker;
+                            // Buat Marker
+                            const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
 
-                                // Event saat marker digeser
-                                marker.on('dragend', function(ev) {
-                                    const position = marker.getLatLng();
-                                    updateInputFromMarker(position.lat, position.lng);
-                                    map.panTo(position);
-                                });
-                            }
-                            
+                            // Simpan Instance Map & Marker ke Elemen HTML
                             mapContainer.mapInstance = map;
-                            
+
+                            if (inputLat.value !== "") {
+                                mapContainer.markerInstance = marker;
+                            }
+
+                            // --- EVENT: KLIK PETA (Map -> Input) ---
                             // Saat peta diklik, pindahkan marker & isi input
                             map.on('click', function(ev) {
                                 const { lat, lng } = ev.latlng;
-
-                                if (mapContainer.markerInstance) {
-                                    mapContainer.markerInstance.setLatLng([lat, lng]);
-                                } else {
-                                    // Kalau belum ada -> Buat Baru
-                                    const newMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                                    mapContainer.markerInstance = newMarker;
-                                    
-                                    // Jangan lupa pasang event drag di marker baru ini
-                                    newMarker.on('dragend', (ev) => {
-                                        const pos = newMarker.getLatLng();
-                                        inputLat.value = pos.lat.toFixed(7);
-                                        inputLng.value = pos.lng.toFixed(7);
-                                    });
-                                }
                                 
-                                // Pindahkan Marker, update inputnya, dan zoom peta ke sana
+                                // Pindahkan Marker dan update inputnya
                                 marker.setLatLng([lat, lng]);
                                 updateInputFromMarker(lat, lng);
-                                map.setView([lat, lng], 15);
+                            });
+
+                            // Event saat marker digeser
+                            marker.on('dragend', function(ev) {
+                                const position = marker.getLatLng();
+                                updateInputFromMarker(position.lat, position.lng);
+                                map.panTo(position);
                             });
     
                             // Paksa kalkulasi ukuran segera setelah dibuat
@@ -327,61 +308,74 @@ const usahaHandler = (data) => {
                                 });
                                 
                             } else {
-                                fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-                                    .then(response => response.json())
-                                    .then(response => {
-                                        Swal.fire({
-                                        title: 'Mengirim Data...',
-                                        text: 'Mohon tunggu sebentar',
-                                        icon: 'info',
-                                        timer: 2000,
-                                        timerProgressBar: true,
-                                        showConfirmButton: false,
-                                        allowOutsideClick: false,
-                                        didOpen: () => {
-                                        Swal.showLoading(); // Menampilkan spinner loading
-                                    }
-                                }).then((result) => {
-                                    // b[i+1].style.display = 'none';
-                                    // Tampilkan Pop-up Sukses setelah timer habis
-                                    if (result.dismiss === Swal.DismissReason.timer) {
+                               fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                                  .then(response => {
+                                    // Pastikan response oke sebelum parsing JSON
+                                    if (!response.ok) throw new Error('Network response was not ok');
+                                    return response.json();
+                                  })
+                                  .then(data => {
+                                    // 1. SEMBUNYIKAN elemen segera setelah data sukses terkirim
+                                    b[i + 1].style.display = 'none';
+                                
+                                    // 2. Tampilkan SweetAlert Loading
+                                    Swal.fire({
+                                      title: 'Mengirim Data...',
+                                      text: 'Mohon tunggu sebentar',
+                                      icon: 'info',
+                                      timer: 2000,
+                                      timerProgressBar: true,
+                                      showConfirmButton: false,
+                                      allowOutsideClick: false,
+                                      didOpen: () => Swal.showLoading();
+                                    }).then((result) => {
+                                      // 3. Tampilkan Notif Sukses SETELAH timer loading selesai
+                                      if (result.dismiss === Swal.DismissReason.timer) {
                                         notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
                                         filterUsaha();
-                                    }
-                                });
-                                    })
-                                    .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
-                                }
-                                
-                            });
+                                      }
+                                    });
+                                  })
+                                  .catch(error => {
+                                    console.error('Error:', error);
+                                    notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda');
+                                  });
                             
-                        } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
-                            // Tutup/Tidak ditemukan/ganda
-                            fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-                                .then(response => response.json())
-                                .then(response => {
+                            } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
+                                // Tutup/Tidak ditemukan/ganda
+                                fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                                  .then(response => {
+                                    // Pastikan response oke sebelum parsing JSON
+                                    if (!response.ok) throw new Error('Network response was not ok');
+                                    return response.json();
+                                  })
+                                  .then(data => {
+                                    // 1. SEMBUNYIKAN elemen segera setelah data sukses terkirim
+                                    b[i + 1].style.display = 'none';
+                                
+                                    // 2. Tampilkan SweetAlert Loading
                                     Swal.fire({
-                                    title: 'Mengirim Data...',
-                                    text: 'Mohon tunggu sebentar',
-                                    icon: 'info',
-                                    timer: 2000,
-                                    timerProgressBar: true,
-                                    showConfirmButton: false,
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                    Swal.showLoading(); // Menampilkan spinner loading
-                                }
-                            }).then((result) => {
-                                // b[i+1].style.display = 'none';
-                                // Tampilkan Pop-up Sukses setelah timer habis
-                                if (result.dismiss === Swal.DismissReason.timer) {
-                                    notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
-                                    filterUsaha();
-                                }
-                            });
-                                })
-                                .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
-                }
+                                      title: 'Mengirim Data...',
+                                      text: 'Mohon tunggu sebentar',
+                                      icon: 'info',
+                                      timer: 2000,
+                                      timerProgressBar: true,
+                                      showConfirmButton: false,
+                                      allowOutsideClick: false,
+                                      didOpen: () => Swal.showLoading();
+                                    }).then((result) => {
+                                      // 3. Tampilkan Notif Sukses SETELAH timer loading selesai
+                                      if (result.dismiss === Swal.DismissReason.timer) {
+                                        notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
+                                        filterUsaha();
+                                      }
+                                    });
+                                  })
+                                  .catch(error => {
+                                    console.error('Error:', error);
+                                    notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda');
+                                  });
+                            }
             })
         });
 
@@ -555,14 +549,3 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
-
-
-
-
-
-
-
-
-
-
-
