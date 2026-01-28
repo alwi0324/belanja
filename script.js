@@ -278,7 +278,7 @@ const usahaHandler = (data) => {
                 if (hasilGc[i].value == 3 && (latInput[i].value == '' || longInput[i].value == '')) {
                     notif('Gagal mengirim data', 'error', 'Jika status usahanya ditemukan harus ada koordinat');
                 } else if (hasilGc[i].value == 3 && latInput[i].value != '' && longInput[i].value != '') {
-                    // Lokasinya gak pas
+                    // Ada lokasi tapi beda desa
                     fetch('https://raw.githubusercontent.com/alwi0324/belanja/refs/heads/main/desa_non%20sls_turf.geojson')
                         .then(res => res.json())
                         .then(dataSf => {
@@ -290,100 +290,55 @@ const usahaHandler = (data) => {
 
                             if (!status) {
                                 Swal.fire({
-                                    title: 'Mengirim Data...',
-                                    text: 'Mohon tunggu sebentar',
-                                    icon: 'info',
-                                    timer: 2500,
-                                    timerProgressBar: true,
-                                    showConfirmButton: false,
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                    Swal.showLoading(); // Menampilkan spinner loading
+                                        title: 'Mengirim Data...',
+                                        text: 'Mohon tunggu sebentar',
+                                        icon: 'info',
+                                        timer: 2500,
+                                        timerProgressBar: true,
+                                        showConfirmButton: false,
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading()
                                     }
-                                }).then((result) => {
-                                    // Tampilkan Pop-up Sukses setelah timer habis
-                                    if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
-                                    }
-                                });
-                                
-                            } else {
-                               fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-                                  .then(response => {
-                                    // Pastikan response oke sebelum parsing JSON
-                                    if (!response.ok) throw new Error('Network response was not ok');
-                                    return response.json();
-                                  })
-                                  .then(data => {
-                                    // 1. SEMBUNYIKAN elemen segera setelah data sukses terkirim
-                                    b[i + 1].style.display = 'none';
-                                
-                                    // 2. Tampilkan SweetAlert Loading
-                                    Swal.fire({
-                                      title: 'Mengirim Data...',
-                                      text: 'Mohon tunggu sebentar',
-                                      icon: 'info',
-                                      timer: 2000,
-                                      timerProgressBar: true,
-                                      showConfirmButton: false,
-                                      allowOutsideClick: false,
-                                      didOpen: () => Swal.showLoading()
-                                    }).then((result) => {
-                                      // 3. Tampilkan Notif Sukses SETELAH timer loading selesai
-                                      if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
-                                        filterUsaha();
-                                      }
-                                    });
-                                  })
-                                  .catch(error => {
-                                    console.error('Error:', error);
-                                    notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda');
-                                  });
-                            
-                            } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
-                                // Tutup/Tidak ditemukan/ganda
-                                fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-                                  .then(response => {
-                                    // Pastikan response oke sebelum parsing JSON
-                                    if (!response.ok) throw new Error('Network response was not ok');
-                                    return response.json();
-                                  })
-                                  .then(data => {
-                                    // 1. SEMBUNYIKAN elemen segera setelah data sukses terkirim
-                                    b[i + 1].style.display = 'none';
-                                
-                                    // 2. Tampilkan SweetAlert Loading
-                                    Swal.fire({
-                                      title: 'Mengirim Data...',
-                                      text: 'Mohon tunggu sebentar',
-                                      icon: 'info',
-                                      timer: 2000,
-                                      timerProgressBar: true,
-                                      showConfirmButton: false,
-                                      allowOutsideClick: false,
-                                      didOpen: () => Swal.showLoading()
-                                    }).then((result) => {
-                                      // 3. Tampilkan Notif Sukses SETELAH timer loading selesai
-                                      if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
-                                        filterUsaha();
-                                      }
-                                    });
-                                  })
-                                  .catch(error => {
-                                    console.error('Error:', error);
-                                    notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda');
-                                  });
+                                )
                             }
-            })
+                        }).then((res) => {
+                            // Tampilkan Pop-up Sukses setelah timer habis
+                            if (res.dismiss === Swal.DismissReason.timer) {
+                                notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
+                            }
+                        });
+                } else {
+                    // Lokasinya sesuai
+                    fetch(scriptURL, { method: 'POST', body: new FormData(form) })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok'); // Pastikan response oke sebelum parsing JSON
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Sembunyikan tombol kirim SEGERA setelah data sukses terkirim
+                            b[i + 1].style.display = 'none';
+                                
+                            Swal.fire({
+                                title: 'Mengirim Data...',
+                                text: 'Mohon tunggu sebentar',
+                                icon: 'info',
+                                timer: 2000,
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            })
+                        })
+                        .then(res => {
+                            if (res.dismiss === Swal.DismissReason.timer) {
+                                notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
+                                filterUsaha();
+                            }
+                        })
+                        .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
+                }
+            });
         });
-
-    } else {
-        kosong.classList.remove('detail-hidden');
-        while (kueriAll.firstChild) {
-            kueriAll.removeChild(kueriAll.firstChild);
-        }
     }
 
 }
@@ -549,4 +504,3 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
-
