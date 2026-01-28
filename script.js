@@ -190,7 +190,7 @@ const usahaHandler = (data) => {
                                 });
                                 
                             } else {
-                                b[i+1].disabled = true;
+                                b[i+1].style.display = none;
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
                                     .then(response => {
@@ -220,10 +220,10 @@ const usahaHandler = (data) => {
                             
                         } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
                             // Tutup/Tidak ditemukan/ganda
+                            b[i+1].style.display = none;
                             fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                 .then(response => response.json())
                                 .then(response => {
-                                    b[i+1].disabled = true;
                                     Swal.fire({
                                     title: 'Mengirim Data...',
                                     text: 'Mohon tunggu sebentar',
@@ -447,6 +447,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
