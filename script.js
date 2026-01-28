@@ -110,9 +110,33 @@ const usahaHandler = (data) => {
         const semuaPeta = document.querySelectorAll('.peta');
         const defaultLat = -8.5369965;
         const defaultLong = 118.4635260;
+        let latInput = document.querySelectorAll('input[name="latitude"]');
+        let longInput = document.querySelectorAll('input[name="longitude"]');
         
         cards.forEach((card, index) => {
             const mapContainer = semuaPeta[index];
+            const inputLat = latInput[index];
+            const inputLng = longInput[index];
+
+            // --- FUNGSI UPDATE MARKER DARI INPUT ---
+            const updateMarkerFromInput = () => {
+                // Cek apakah peta dan marker sudah ada
+                if (mapContainer.mapInstance && mapContainer.markerInstance) {
+                    const latVal = parseFloat(inputLat.value);
+                    const lngVal = parseFloat(inputLng.value);
+    
+                    // Hanya update jika angka valid
+                    if (!isNaN(latVal) && !isNaN(lngVal)) {
+                        const newLatLng = new L.LatLng(latVal, lngVal);
+                        mapContainer.markerInstance.setLatLng(newLatLng); // Pindah marker
+                        mapContainer.mapInstance.panTo(newLatLng);        // Geser peta
+                    }
+                }
+            }
+
+            // Pasang Event Listener pada Input (Live Update)
+            inputLat.addEventListener('input', updateMarkerFromInput);
+            inputLng.addEventListener('input', updateMarkerFromInput);
             
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper')) return;
@@ -122,7 +146,16 @@ const usahaHandler = (data) => {
                 if (card.classList.contains('expanded')) {
                     setTimeout(() => {
                         // Safety Check: Pastikan container peta ada
-                        if (!mapContainer) return;
+                        if (!mapContainer || !card.classList.contains('expanded')) return;
+
+                        // Logika: Jika Input Kosong -> Pakai Default. Jika Ada Isi -> Pakai Isi Input.
+                        let initLat = defaultLat;
+                        let initLng = defaultLong;
+    
+                        if (inputLat.value !== "" && inputLng.value !== "") {
+                            initLat = parseFloat(inputLat.value);
+                            initLng = parseFloat(inputLng.value);
+                        }
 
                         // --- SKENARIO A: Peta Belum Pernah Dibuat (Init Pertama) ---
                         // Leaflet menandai elemen yang sudah ada peta dengan properti _leaflet_id
@@ -132,9 +165,32 @@ const usahaHandler = (data) => {
                                 attribution: '&copy; OpenStreetMap contributors'
                             }).addTo(map);
 
-                            // SIMPAN INSTANCE MAP KE ELEMEN HTML
-                            // Agar bisa dipanggil lagi nanti tanpa variabel global array
+                            // Buat Marker
+                            const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
+
+                            // Simpan Instance Map & Marker ke Elemen HTML
                             mapContainer.mapInstance = map;
+                            mapContainer.markerInstance = marker;
+
+                            // --- EVENT: KLIK PETA (Map -> Input) ---
+                            // Saat peta diklik, pindahkan marker & isi input
+                            map.on('click', function(ev) {
+                                const { lat, lng } = ev.latlng;
+                                
+                                // 1. Pindahkan Marker
+                                marker.setLatLng([lat, lng]);
+                                
+                                // 2. Isi Input Form (batasi 6-7 desimal agar rapi)
+                                inputLat.value = lat.toFixed(7);
+                                inputLng.value = lng.toFixed(7);
+                            });
+
+                            // Event saat marker digeser
+                            marker.on('dragend', function(ev) {
+                                const position = marker.getLatLng();
+                                inputLat.value = position.lat.toFixed(7);
+                                inputLng.value = position.lng.toFixed(7);
+                            });
     
                             // Paksa kalkulasi ukuran segera setelah dibuat
                             map.invalidateSize();
@@ -143,6 +199,10 @@ const usahaHandler = (data) => {
                         else if (mapContainer.mapInstance) {
                             // Beritahu Leaflet ukuran div sudah berubah membesar
                             mapContainer.mapInstance.invalidateSize();
+
+                            // Opsional: Pastikan posisi marker sinkron dengan input terakhir
+                            // (Berguna jika user edit input saat card tertutup)
+                            updateMarkerFromInput();
                         }
                     }, 500);
                 }
@@ -151,9 +211,6 @@ const usahaHandler = (data) => {
 
         // Untuk tagging
         let btnLocs = document.querySelectorAll('.btn-location');
-        let latInput = document.querySelectorAll('input[name="latitude"]');
-        let longInput = document.querySelectorAll('input[name="longitude"]');
-
         btnLocs.forEach((b, i) => {
             b.addEventListener('click', () => {
                 navigator.geolocation.getCurrentPosition(
