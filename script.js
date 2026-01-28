@@ -119,25 +119,49 @@ const usahaHandler = (data) => {
             const inputLng = longInput[index];
             const btnGps = btnLocs[index];
 
-            // --- FUNGSI UPDATE MARKER DARI INPUT ---
-            const updateMarkerFromInput = () => {
-                if (mapContainer.mapInstance && mapContainer.markerInstance) {
-                    const latVal = parseFloat(inputLat.value);
-                    const lngVal = parseFloat(inputLng.value);
-    
-                    // Hanya update jika angka valid
-                    if (!isNaN(latVal) && !isNaN(lngVal)) {
-                        const newLatLng = [latVal, lngVal];
-                        mapContainer.markerInstance.setLatLng(newLatLng); // Pindah marker
-                        mapContainer.mapInstance.panTo(newLatLng);        // Geser peta
-                    }
+            // Fungsi ini pintar: Kalau marker belum ada dia buat, kalau sudah ada dia geser.
+            const addOrMoveMarker = (lat, lng) => {
+                // Pastikan peta sudah ada
+                if (!mapContainer.mapInstance) return; 
+                
+                const newLatLng = new L.LatLng(lat, lng);
+
+                // SKENARIO A: Marker SUDAH Ada -> Geser saja
+                if (mapContainer.markerInstance) {
+                    mapContainer.markerInstance.setLatLng(newLatLng);
+                } 
+                // SKENARIO B: Marker BELUM Ada -> Buat Baru
+                else {
+                    const newMarker = L.marker(newLatLng, { draggable: true }).addTo(mapContainer.mapInstance);
+                    mapContainer.markerInstance = newMarker; // Simpan ke variable
+
+                    newMarker.on('dragend', (e) => {
+                        const pos = newMarker.getLatLng();
+                        updateInputFromMarker(pos.lat, pos.lng);
+                        mapContainer.mapInstance.panTo(pos);
+                    });
                 }
-            }
+
+                mapContainer.mapInstance.setView(newLatLng, 15);
+            };
 
             const updateInputFromMarker = (lat, lng) => {
                 inputLat.value = lat.toFixed(7);
                 inputLng.value = lng.toFixed(7);
             };
+
+            // --- 3. UPDATE LOGIKA INPUT MANUAL ---
+            const updateMarkerFromInput = () => {
+                if (mapContainer.mapInstance) {
+                    const latVal = parseFloat(inputLat.value);
+                    const lngVal = parseFloat(inputLng.value);
+
+                    if (!isNaN(latVal) && !isNaN(lngVal)) {
+                        // Gunakan helper yang sama agar konsisten
+                        addOrMoveMarker(latVal, lngVal);
+                    }
+                }
+            }
 
             btnGps.addEventListener('click', () => {
                 const textAsli = btnGps.textContent;
@@ -152,9 +176,9 @@ const usahaHandler = (data) => {
                             // Isi Input
                             updateInputFromMarker(lat, lng);
 
-                            // Jika peta sedang terbuka, pindahkan marker juga
+                            // Cek apakah peta sedang terbuka?
                             if (mapContainer.mapInstance) {
-                                updateMarkerFromInput();
+                                addOrMoveMarker(lat, lng); // <--- INI KUNCINYA
                             }
 
                             btnGps.textContent = textAsli;
@@ -171,8 +195,25 @@ const usahaHandler = (data) => {
             });
 
             // Pasang Event Listener pada Input (Live Update)
-            inputLat.addEventListener('input', updateMarkerFromInput);
+            inputLat.addEventListener('input', () => {
+                if (!inputLat.value.includes(', ')) {updateMarkerFromInput()}
+            });
             inputLng.addEventListener('input', updateMarkerFromInput);
+
+            inputLat.addEventListener('change', () => {
+                if (inputLat.value.includes(', ')) {
+                    let koords = inputLat.value.split(', ');
+
+                    // Set input di lat long
+                    inputLat.value = koords[0];
+                    inputLng.value = koords[1];
+
+                    // Geser marker dan petanya
+                    updateMarkerFromInput();
+                }
+            });
+            inputLng.addEventListener('change', updateMarkerFromInput);
+            
             
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper') || e.target.closest('.btn-location')) return;
@@ -252,19 +293,6 @@ const usahaHandler = (data) => {
             });
         });
 
-        // Pisahkan latitude dan longitude saat copas dari gmaps
-        latInput.forEach((lat, i) => {
-            lat.addEventListener('change', () => {
-                if (lat.value.includes(',')) {
-                    let koords = lat.value.split(', ');
-
-                    // Set input di lat long
-                    lat.value = koords[0];
-                    longInput[i].value = koords[1];
-                }
-            });
-        });
-
         // Fungsi untuk mengirim form ke google sheet
         let gcForms = document.querySelectorAll('form');
         let hasilGc = document.querySelectorAll('select[name="hasilgc"]');
@@ -301,9 +329,9 @@ const usahaHandler = (data) => {
                                     }
                                 )
                             }
-                        }).then((res) => {
+                        }).then((result) => {
                             // Tampilkan Pop-up Sukses setelah timer habis
-                            if (res.dismiss === Swal.DismissReason.timer) {
+                            if (result.dismiss === Swal.DismissReason.timer) {
                                 notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
                             }
                         });
@@ -329,8 +357,8 @@ const usahaHandler = (data) => {
                                 didOpen: () => Swal.showLoading()
                             })
                         })
-                        .then(res => {
-                            if (res.dismiss === Swal.DismissReason.timer) {
+                        .then(result => {
+                            if (result.dismiss === Swal.DismissReason.timer) {
                                 notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
                                 filterUsaha();
                             }
