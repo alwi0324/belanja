@@ -337,7 +337,6 @@ const usahaHandler = (data) => {
                             });
                                 })
                                 .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
-
                 }
             })
         });
@@ -420,34 +419,6 @@ kecamatan.addEventListener('change', () => {
     }
 
 });
-
-// Fungsi untuk mengambil GPS
-// function getLocation() {
-//     if (navigator.geolocation) {
-//         navigator.geolocation.getCurrentPosition(function(position) {
-//             lat.value = position.coords.latitude;
-//             long.value = position.coords.longitude;
-//         }, function(error) {
-//             alert("Gagal mendapatkan lokasi. Pastikan GPS aktif.");
-//             });
-//     } else {
-//         alert("Browser tidak mendukung Geolocation.");
-//     }
-// }
-
-// // Validasi Form
-// formUsaha.addEventListener('submit', (e) => {
-//     const status = document.getElementById('status').value;
-//     const lat = document.getElementById('lat').value;
-//     const long = document.getElementById('long').value;
-
-//     if (status === "Ditemukan" && (lat === "" || long === "")) {
-//         alert("Kolom Latitude dan Longitude harus diisi jika Usaha ditemukan");
-//         e.preventDefault(); // Batalkan submit
-//     } else {
-//         alert("Data berhasil disimpan!");
-//     }
-// });
 
 function filterUsaha() {
     let kueriDasar = `SELECT A,B,C,D,E,F,G,H,I,J,K,L,M,N,O WHERE F = '${kecamatan.value}' AND A = ''`;
@@ -540,6 +511,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
