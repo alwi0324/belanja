@@ -94,13 +94,13 @@ h1 {
             background-color: #218838;
         }
 
-        /* .peta {
+        .peta {
             height: 250px;
             width: 100%;
             border-radius: 8px;
             border: 1px solid #ccc;
             margin-top: 10px;
-        } */
+        }
 
         .btn-submit {
             width: 100%;
@@ -182,4 +182,5 @@ h1 {
             .form-group {
                 min-width: 100%;
             }
+
         }
