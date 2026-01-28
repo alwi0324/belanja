@@ -173,6 +173,8 @@ const usahaHandler = (data) => {
             // Pasang Event Listener pada Input (Live Update)
             inputLat.addEventListener('input', updateMarkerFromInput);
             inputLng.addEventListener('input', updateMarkerFromInput);
+            inputLat.addEventListener('change', updateMarkerFromInput);
+            inputLng.addEventListener('change', updateMarkerFromInput);
             
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper') || e.target.closest('.btn-location')) return;
@@ -201,31 +203,48 @@ const usahaHandler = (data) => {
                                 attribution: '&copy; OpenStreetMap contributors'
                             }).addTo(map);
 
-                            // Buat Marker
-                            const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
+                            // Cek Input
+                            const hasInput = inputLat.value !== "" && inputLng.value !== "";
+                            if (hasInput) {
+                                // Buat marker
+                                const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
+                                
+                                // Simpan Instance Map & Marker ke Elemen HTML
+                                mapContainer.mapInstance = marker;
 
-                            // Simpan Instance Map & Marker ke Elemen HTML
-                            mapContainer.mapInstance = map;
-
-                            if (inputLat.value !== "") {
-                                mapContainer.markerInstance = marker;
+                                // Event saat marker digeser
+                                marker.on('dragend', function(ev) {
+                                    const position = marker.getLatLng();
+                                    updateInputFromMarker(position.lat, position.lng);
+                                    map.panTo(position);
+                                });
                             }
-
-                            // --- EVENT: KLIK PETA (Map -> Input) ---
+                            
+                            mapContainer.mapInstance = map;
+                            
                             // Saat peta diklik, pindahkan marker & isi input
                             map.on('click', function(ev) {
                                 const { lat, lng } = ev.latlng;
+
+                                if (mapContainer.markerInstance) {
+                                    mapContainer.markerInstance.setLatLng([lat, lng]);
+                                } else {
+                                    // Kalau belum ada -> Buat Baru
+                                    const newMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                                    mapContainer.markerInstance = newMarker;
+                                    
+                                    // Jangan lupa pasang event drag di marker baru ini
+                                    newMarker.on('dragend', (ev) => {
+                                        const pos = newMarker.getLatLng();
+                                        inputLat.value = pos.lat.toFixed(7);
+                                        inputLng.value = pos.lng.toFixed(7);
+                                    });
+                                }
                                 
-                                // Pindahkan Marker dan update inputnya
+                                // Pindahkan Marker, update inputnya, dan zoom peta ke sana
                                 marker.setLatLng([lat, lng]);
                                 updateInputFromMarker(lat, lng);
-                            });
-
-                            // Event saat marker digeser
-                            marker.on('dragend', function(ev) {
-                                const position = marker.getLatLng();
-                                updateInputFromMarker(position.lat, position.lng);
-                                map.panTo(position);
+                                map.setView([lat, lng], 15);
                             });
     
                             // Paksa kalkulasi ukuran segera setelah dibuat
@@ -323,7 +342,7 @@ const usahaHandler = (data) => {
                                         Swal.showLoading(); // Menampilkan spinner loading
                                     }
                                 }).then((result) => {
-                                    b[i+1].style.display = 'none';
+                                    // b[i+1].style.display = 'none';
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
                                         notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
@@ -353,7 +372,7 @@ const usahaHandler = (data) => {
                                     Swal.showLoading(); // Menampilkan spinner loading
                                 }
                             }).then((result) => {
-                                b[i+1].style.display = 'none';
+                                // b[i+1].style.display = 'none';
                                 // Tampilkan Pop-up Sukses setelah timer habis
                                 if (result.dismiss === Swal.DismissReason.timer) {
                                     notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
@@ -536,6 +555,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
