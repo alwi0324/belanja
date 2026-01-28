@@ -196,7 +196,7 @@ const usahaHandler = (data) => {
                         // --- SKENARIO A: Peta Belum Pernah Dibuat (Init Pertama) ---
                         // Leaflet menandai elemen yang sudah ada peta dengan properti _leaflet_id
                         if (!mapContainer._leaflet_id) {
-                            const map = L.map(mapContainer).setView([defaultLat, defaultLong], 15);
+                            const map = L.map(mapContainer).setView([initLat, initLng], 15);
                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                 attribution: '&copy; OpenStreetMap contributors'
                             }).addTo(map);
@@ -230,16 +230,19 @@ const usahaHandler = (data) => {
                         }
                         // --- SKENARIO B: Peta Sudah Ada (User buka kembali card) ---
                         else if (mapContainer.mapInstance) {
+                            const map = mapContainer.mapInstance
                             // Beritahu Leaflet ukuran div sudah berubah membesar
-                            mapContainer.mapInstance.invalidateSize();
+                            map.invalidateSize();
 
                             // Opsional: Pastikan posisi marker sinkron dengan input terakhir
                             // (Berguna jika user edit input saat card tertutup)
                             updateMarkerFromInput();
 
-                            // Kembalikan pandangan ke marker
+                            // Ambil posisi marker sekarang (yang sudah diupdate baris atas)
                             const currentLatLng = mapContainer.markerInstance.getLatLng();
-                            map.panTo(currentLatLng);
+            
+                           // Pindahkan kamera ke marker tersebut
+                           map.setView(currentLatLng, 15);
                         }
                     }, 500);
                 }
@@ -530,6 +533,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
