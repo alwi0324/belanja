@@ -308,7 +308,6 @@ const usahaHandler = (data) => {
                                 });
                                 
                             } else {
-                                b[i+1].style.display = 'none';
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
                                     .then(response => {
@@ -316,7 +315,7 @@ const usahaHandler = (data) => {
                                         title: 'Mengirim Data...',
                                         text: 'Mohon tunggu sebentar',
                                         icon: 'info',
-                                        timer: 2500,
+                                        timer: 2000,
                                         timerProgressBar: true,
                                         showConfirmButton: false,
                                         allowOutsideClick: false,
@@ -324,6 +323,7 @@ const usahaHandler = (data) => {
                                         Swal.showLoading(); // Menampilkan spinner loading
                                     }
                                 }).then((result) => {
+                                    b[i+1].style.display = 'none';
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
                                         notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
@@ -338,7 +338,6 @@ const usahaHandler = (data) => {
                             
                         } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
                             // Tutup/Tidak ditemukan/ganda
-                            b[i+1].style.display = 'none';
                             fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                 .then(response => response.json())
                                 .then(response => {
@@ -346,7 +345,7 @@ const usahaHandler = (data) => {
                                     title: 'Mengirim Data...',
                                     text: 'Mohon tunggu sebentar',
                                     icon: 'info',
-                                    timer: 2500,
+                                    timer: 2000,
                                     timerProgressBar: true,
                                     showConfirmButton: false,
                                     allowOutsideClick: false,
@@ -354,6 +353,7 @@ const usahaHandler = (data) => {
                                     Swal.showLoading(); // Menampilkan spinner loading
                                 }
                             }).then((result) => {
+                                b[i+1].style.display = 'none';
                                 // Tampilkan Pop-up Sukses setelah timer habis
                                 if (result.dismiss === Swal.DismissReason.timer) {
                                     notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
@@ -536,6 +536,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
