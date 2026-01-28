@@ -206,7 +206,10 @@ const usahaHandler = (data) => {
 
                             // Simpan Instance Map & Marker ke Elemen HTML
                             mapContainer.mapInstance = map;
-                            mapContainer.markerInstance = marker;
+
+                            if (inputLat.value !== "") {
+                                mapContainer.markerInstance = marker;
+                            }
 
                             // --- EVENT: KLIK PETA (Map -> Input) ---
                             // Saat peta diklik, pindahkan marker & isi input
@@ -305,7 +308,7 @@ const usahaHandler = (data) => {
                                 });
                                 
                             } else {
-                                b[i+1].style.display = none;
+                                b[i+1].style.display = 'none';
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
                                     .then(response => {
@@ -335,7 +338,7 @@ const usahaHandler = (data) => {
                             
                         } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
                             // Tutup/Tidak ditemukan/ganda
-                            b[i+1].style.display = none;
+                            b[i+1].style.display = 'none';
                             fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                 .then(response => response.json())
                                 .then(response => {
@@ -533,6 +536,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
