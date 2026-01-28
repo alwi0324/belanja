@@ -327,7 +327,7 @@ const usahaHandler = (data) => {
                                       timerProgressBar: true,
                                       showConfirmButton: false,
                                       allowOutsideClick: false,
-                                      didOpen: () => Swal.showLoading();
+                                      didOpen: () => Swal.showLoading()
                                     }).then((result) => {
                                       // 3. Tampilkan Notif Sukses SETELAH timer loading selesai
                                       if (result.dismiss === Swal.DismissReason.timer) {
@@ -362,7 +362,7 @@ const usahaHandler = (data) => {
                                       timerProgressBar: true,
                                       showConfirmButton: false,
                                       allowOutsideClick: false,
-                                      didOpen: () => Swal.showLoading();
+                                      didOpen: () => Swal.showLoading()
                                     }).then((result) => {
                                       // 3. Tampilkan Notif Sukses SETELAH timer loading selesai
                                       if (result.dismiss === Swal.DismissReason.timer) {
@@ -549,3 +549,4 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
