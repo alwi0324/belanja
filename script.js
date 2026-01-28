@@ -185,15 +185,15 @@ const usahaHandler = (data) => {
                                 }).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.slice(1)}`);
+                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
                                     }
                                 });
                                 
                             } else {
+                                b[i+1].disabled = true;
                                 fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                     .then(response => response.json())
                                     .then(response => {
-                                        b[i+1].style.display = 'none'
                                         Swal.fire({
                                         title: 'Mengirim Data...',
                                         text: 'Mohon tunggu sebentar',
@@ -223,7 +223,7 @@ const usahaHandler = (data) => {
                             fetch(scriptURL, { method: 'POST', body: new FormData(form) })
                                 .then(response => response.json())
                                 .then(response => {
-                                    b[i+1].style.display = 'none'
+                                    b[i+1].disabled = true;
                                     Swal.fire({
                                     title: 'Mengirim Data...',
                                     text: 'Mohon tunggu sebentar',
@@ -447,5 +447,6 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
