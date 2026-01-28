@@ -92,6 +92,9 @@ const usahaHandler = (data) => {
                             </button>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="peta"></div>
+                    </div>
                     <button type="submit" class="btn-submit">Simpan Data</button>
                 </form>
             </div>
@@ -104,14 +107,47 @@ const usahaHandler = (data) => {
 
         // Fungsi Toggle Buka/Tutup Card
         const cards = document.querySelectorAll('.hasil');
+        const semuaPeta = document.querySelectorAll('.peta');
+        const defaultLat = -8.5369965;
+        const defaultLong = 118.4635260;
+        
         cards.forEach((card, index) => {
-            // Pasang Event Listener KLIK pada Card
+            const mapContainer = semuaPeta[index];
+            
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper')) return;
                 card.classList.toggle('expanded');
+
+                // Hanya render peta jika card dalam posisi TERBUKA
+                if (card.classList.contains('expanded')) {
+                    setTimeout(() => {
+                        // Safety Check: Pastikan container peta ada
+                        if (!mapContainer) return;
+
+                        // --- SKENARIO A: Peta Belum Pernah Dibuat (Init Pertama) ---
+                        // Leaflet menandai elemen yang sudah ada peta dengan properti _leaflet_id
+                        if (!mapContainer._leaflet_id) {
+                            const map = L.map(mapContainer).setView([defaultLat, defaultLong], 15);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; OpenStreetMap contributors'
+                            }).addTo(map);
+
+                            // SIMPAN INSTANCE MAP KE ELEMEN HTML
+                            // Agar bisa dipanggil lagi nanti tanpa variabel global array
+                            mapContainer.mapInstance = map;
+    
+                            // Paksa kalkulasi ukuran segera setelah dibuat
+                            map.invalidateSize();
+                        }
+                        // --- SKENARIO B: Peta Sudah Ada (User buka kembali card) ---
+                        else if (mapContainer.mapInstance) {
+                            // Beritahu Leaflet ukuran div sudah berubah membesar
+                            mapContainer.mapInstance.invalidateSize();
+                        }
+                    }, 500);
+                }
             });
         });
-
 
         // Untuk tagging
         let btnLocs = document.querySelectorAll('.btn-location');
@@ -447,6 +483,7 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
 
