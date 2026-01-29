@@ -368,7 +368,7 @@ const usahaHandler = (data) => {
                                 allowOutsideClick: false,
                                 didOpen: () => Swal.showLoading()
                             }).
-                        then(result => {
+                        then((result) => {
                             if (result.dismiss === Swal.DismissReason.timer) {
                                 notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
                                 filterUsaha();
@@ -544,5 +544,6 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
 
