@@ -260,7 +260,7 @@ const usahaHandler = (data) => {
                         const hasData = !isNaN(latVal) && !isNaN(lngVal);
                     
                         // Tentukan Pusat Peta: Kalau ada data pakai data, kalau kosong pakai Default Dompu
-                        const initCenter = hasData ? [latVal, lngVal] : [defaultLat, defaultLng];
+                        const initCenter = hasData ? [latVal, lngVal] : [defaultLat, defaultLong];
                     
                         // --- SKENARIO A: Init Peta Pertama Kali ---
                         if (!mapContainer._leaflet_id) {
@@ -544,4 +544,5 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
