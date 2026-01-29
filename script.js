@@ -152,13 +152,43 @@ const usahaHandler = (data) => {
 
             // --- 3. UPDATE LOGIKA INPUT MANUAL ---
             const updateMarkerFromInput = () => {
-                if (mapContainer.mapInstance) {
-                    const latVal = parseFloat(inputLat.value);
-                    const lngVal = parseFloat(inputLng.value);
-
-                    if (!isNaN(latVal) && !isNaN(lngVal)) {
-                        // Gunakan helper yang sama agar konsisten
-                        addOrMoveMarker(latVal, lngVal);
+                // Pastikan peta sudah ada
+                if (!mapContainer.mapInstance) return;
+            
+                const latVal = parseFloat(inputLat.value);
+                const lngVal = parseFloat(inputLng.value);
+            
+                // KONDISI A: Input Valid (Angka) -> Tampilkan Marker
+                if (!isNaN(latVal) && !isNaN(lngVal)) {
+                    const newLatLng = new L.LatLng(latVal, lngVal);
+            
+                    // Jika marker sudah ada -> Geser
+                    if (mapContainer.markerInstance) {
+                        mapContainer.markerInstance.setLatLng(newLatLng);
+                    } 
+                    // Jika marker belum ada -> Buat Baru
+                    else {
+                        const newMarker = L.marker(newLatLng, { draggable: true }).addTo(mapContainer.mapInstance);
+                        mapContainer.markerInstance = newMarker;
+            
+                        // Pasang event drag pada marker baru
+                        newMarker.on('dragend', (e) => {
+                            const pos = newMarker.getLatLng();
+                            inputLat.value = pos.lat.toFixed(7);
+                            inputLng.value = pos.lng.toFixed(7);
+                            mapContainer.mapInstance.panTo(pos);
+                        });
+                    }
+                    
+                    // Geser pandangan peta ke marker
+                    mapContainer.mapInstance.panTo(newLatLng);
+                } 
+                
+                // KONDISI B: Input Kosong/Invalid -> HAPUS MARKER
+                else {
+                    if (mapContainer.markerInstance) {
+                        mapContainer.markerInstance.remove(); // <--- INI PERINTAH HAPUSNYA
+                        mapContainer.markerInstance = null;   // Reset variabel jadi kosong
                     }
                 }
             }
@@ -178,7 +208,7 @@ const usahaHandler = (data) => {
 
                             // Cek apakah peta sedang terbuka?
                             if (mapContainer.mapInstance) {
-                                addOrMoveMarker(lat, lng); // <--- INI KUNCINYA
+                                addOrMoveMarker(lat, lng);
                             }
 
                             btnGps.textContent = textAsli;
@@ -222,73 +252,55 @@ const usahaHandler = (data) => {
                 // Hanya render peta jika card dalam posisi TERBUKA
                 if (card.classList.contains('expanded')) {
                     setTimeout(() => {
-                        // Safety Check: Pastikan container peta ada
                         if (!mapContainer || !card.classList.contains('expanded')) return;
-
-                        // Logika: Jika Input Kosong -> Pakai Default. Jika Ada Isi -> Pakai Isi Input.
-                        let initLat = defaultLat;
-                        let initLng = defaultLong;
-    
-                        if (inputLat.value !== "" && inputLng.value !== "") {
-                            initLat = parseFloat(inputLat.value);
-                            initLng = parseFloat(inputLng.value);
-                        }
-
-                        // --- SKENARIO A: Peta Belum Pernah Dibuat (Init Pertama) ---
-                        // Leaflet menandai elemen yang sudah ada peta dengan properti _leaflet_id
+                    
+                        // Cek apakah ada data dari database (Input value)
+                        const latVal = parseFloat(inputLat.value);
+                        const lngVal = parseFloat(inputLng.value);
+                        const hasData = !isNaN(latVal) && !isNaN(lngVal);
+                    
+                        // Tentukan Pusat Peta: Kalau ada data pakai data, kalau kosong pakai Default Dompu
+                        const initCenter = hasData ? [latVal, lngVal] : [defaultLat, defaultLng];
+                    
+                        // --- SKENARIO A: Init Peta Pertama Kali ---
                         if (!mapContainer._leaflet_id) {
-                            const map = L.map(mapContainer).setView([initLat, initLng], 15);
+                            const map = L.map(mapContainer).setView(initCenter, 15);
+                    
                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                 attribution: '&copy; OpenStreetMap contributors'
                             }).addTo(map);
-
-                            // Buat Marker
-                            const marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
-
-                            // Simpan Instance Map & Marker ke Elemen HTML
+                    
                             mapContainer.mapInstance = map;
-
-                            if (inputLat.value !== "") {
-                                mapContainer.markerInstance = marker;
-                            }
-
-                            // --- EVENT: KLIK PETA (Map -> Input) ---
-                            // Saat peta diklik, pindahkan marker & isi input
-                            map.on('click', function(ev) {
-                                const { lat, lng } = ev.latlng;
+                    
+                            // PENTING: Panggil fungsi update ini segera setelah peta jadi.
+                            // Fungsi ini otomatis akan mengecek input:
+                            // - Kalau ada isi (dari DB) -> Marker Muncul.
+                            // - Kalau kosong -> Marker Tidak Muncul (Peta bersih).
+                            updateMarkerFromInput(); 
+                    
+                            // Event Klik Peta (Memunculkan Marker dari kosong)
+                            map.on('click', (e) => {
+                                const { lat, lng } = e.latlng;
                                 
-                                // Pindahkan Marker dan update inputnya
-                                marker.setLatLng([lat, lng]);
-                                updateInputFromMarker(lat, lng);
+                                // Isi input dulu
+                                inputLat.value = lat.toFixed(7);
+                                inputLng.value = lng.toFixed(7);
+                                
+                                // Lalu panggil fungsi update untuk memunculkan marker
+                                updateMarkerFromInput();
                             });
-
-                            // Event saat marker digeser
-                            marker.on('dragend', function(ev) {
-                                const position = marker.getLatLng();
-                                updateInputFromMarker(position.lat, position.lng);
-                                map.panTo(position);
-                            });
-    
-                            // Paksa kalkulasi ukuran segera setelah dibuat
+                            
                             map.invalidateSize();
-                        }
-                        // --- SKENARIO B: Peta Sudah Ada (User buka kembali card) ---
+                        } 
+                        
+                        // --- SKENARIO B: Peta Sudah Ada (Re-open) ---
                         else if (mapContainer.mapInstance) {
-                            const map = mapContainer.mapInstance
-                            // Beritahu Leaflet ukuran div sudah berubah membesar
-                            map.invalidateSize();
-
-                            // Opsional: Pastikan posisi marker sinkron dengan input terakhir
-                            // (Berguna jika user edit input saat card tertutup)
-                            updateMarkerFromInput();
-
-                            // Ambil posisi marker sekarang (yang sudah diupdate baris atas)
-                            const currentLatLng = mapContainer.markerInstance.getLatLng();
-            
-                           // Pindahkan kamera ke marker tersebut
-                           map.setView(currentLatLng, 15);
+                            mapContainer.mapInstance.invalidateSize();
+                            
+                            // Sinkronisasi ulang (Siapa tahu user menghapus input saat card tertutup)
+                            updateMarkerFromInput(); 
                         }
-                    }, 500);
+                    }, 400);
                 }
             });
         });
@@ -327,14 +339,14 @@ const usahaHandler = (data) => {
                                         allowOutsideClick: false,
                                         didOpen: () => Swal.showLoading()
                                     }
-                                )
+                                ).then((result) => {
+                                    // Tampilkan Pop-up Sukses setelah timer habis
+                                    if (result.dismiss === Swal.DismissReason.timer) {
+                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
+                                    }
+                                });
                             }
-                        }).then((result) => {
-                            // Tampilkan Pop-up Sukses setelah timer habis
-                            if (result.dismiss === Swal.DismissReason.timer) {
-                                notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
-                            }
-                        });
+                        })
                 } else {
                     // Lokasinya sesuai
                     fetch(scriptURL, { method: 'POST', body: new FormData(form) })
@@ -355,13 +367,13 @@ const usahaHandler = (data) => {
                                 showConfirmButton: false,
                                 allowOutsideClick: false,
                                 didOpen: () => Swal.showLoading()
-                            })
-                        })
-                        .then(result => {
+                            }).
+                        then(result => {
                             if (result.dismiss === Swal.DismissReason.timer) {
                                 notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
                                 filterUsaha();
                             }
+                        })
                         })
                         .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
                 }
@@ -532,3 +544,4 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
