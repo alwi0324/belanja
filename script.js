@@ -1,6 +1,6 @@
 import booleanPointInPolygon from 'https://cdn.jsdelivr.net/npm/@turf/boolean-point-in-polygon@6.5.0/+esm';
 import { point } from 'https://cdn.jsdelivr.net/npm/@turf/helpers@6.5.0/+esm';
-const scriptURL = 'https://script.google.com/macros/s/AKfycbzWiSWbCodiwpEpnwJRlltQP-m4kGPy8XgVidtD4q5WZUlswFIO0sSnlv0r7B9EIwM/exec';
+const scriptURL = 'https://script.google.com/macros/s/AKfycbzANIZWzCbweBFbB6ZTvewTgJgHtFtYwj8KIVkkh9JvvbOFYVdCkW0IXu3u_W-jWMk/exec';
 
 // Sweet Alert
 function notif(judul, ikon, teks) {
@@ -18,7 +18,7 @@ let kosong = document.querySelector('.detail-hidden');
 let kueriAll = document.querySelector('.kueri-all');
 
 const usahaHandler = (data) => {
-    let hasil = data.slice(0,10);
+    let hasil = data.slice(0, 10);
 
     if (hasil.length) {
         kosong.classList.add('detail-hidden');
@@ -99,7 +99,7 @@ const usahaHandler = (data) => {
             </div>
         </div>`
             )
-            
+
         }
 
         kueriAll.innerHTML = hasilEstablishments.join('');
@@ -112,7 +112,7 @@ const usahaHandler = (data) => {
         let latInput = document.querySelectorAll('input[name="latitude"]');
         let longInput = document.querySelectorAll('input[name="longitude"]');
         let btnLocs = document.querySelectorAll('.btn-location');
-        
+
         cards.forEach((card, index) => {
             const mapContainer = semuaPeta[index];
             const inputLat = latInput[index];
@@ -122,14 +122,14 @@ const usahaHandler = (data) => {
             // Fungsi ini pintar: Kalau marker belum ada dia buat, kalau sudah ada dia geser.
             const addOrMoveMarker = (lat, lng) => {
                 // Pastikan peta sudah ada
-                if (!mapContainer.mapInstance) return; 
-                
+                if (!mapContainer.mapInstance) return;
+
                 const newLatLng = new L.LatLng(lat, lng);
 
                 // SKENARIO A: Marker SUDAH Ada -> Geser saja
                 if (mapContainer.markerInstance) {
                     mapContainer.markerInstance.setLatLng(newLatLng);
-                } 
+                }
                 // SKENARIO B: Marker BELUM Ada -> Buat Baru
                 else {
                     const newMarker = L.marker(newLatLng, { draggable: true }).addTo(mapContainer.mapInstance);
@@ -154,23 +154,23 @@ const usahaHandler = (data) => {
             const updateMarkerFromInput = () => {
                 // Pastikan peta sudah ada
                 if (!mapContainer.mapInstance) return;
-            
+
                 const latVal = parseFloat(inputLat.value);
                 const lngVal = parseFloat(inputLng.value);
-            
+
                 // KONDISI A: Input Valid (Angka) -> Tampilkan Marker
                 if (!isNaN(latVal) && !isNaN(lngVal)) {
                     const newLatLng = new L.LatLng(latVal, lngVal);
-            
+
                     // Jika marker sudah ada -> Geser
                     if (mapContainer.markerInstance) {
                         mapContainer.markerInstance.setLatLng(newLatLng);
-                    } 
+                    }
                     // Jika marker belum ada -> Buat Baru
                     else {
                         const newMarker = L.marker(newLatLng, { draggable: true }).addTo(mapContainer.mapInstance);
                         mapContainer.markerInstance = newMarker;
-            
+
                         // Pasang event drag pada marker baru
                         newMarker.on('dragend', (e) => {
                             const pos = newMarker.getLatLng();
@@ -179,11 +179,11 @@ const usahaHandler = (data) => {
                             mapContainer.mapInstance.panTo(pos);
                         });
                     }
-                    
+
                     // Geser pandangan peta ke marker
                     mapContainer.mapInstance.panTo(newLatLng);
-                } 
-                
+                }
+
                 // KONDISI B: Input Kosong/Invalid -> HAPUS MARKER
                 else {
                     if (mapContainer.markerInstance) {
@@ -226,7 +226,7 @@ const usahaHandler = (data) => {
 
             // Pasang Event Listener pada Input (Live Update)
             inputLat.addEventListener('input', () => {
-                if (!inputLat.value.includes(', ')) {updateMarkerFromInput()}
+                if (!inputLat.value.includes(', ')) { updateMarkerFromInput() }
             });
             inputLng.addEventListener('input', updateMarkerFromInput);
 
@@ -243,8 +243,8 @@ const usahaHandler = (data) => {
                 }
             });
             inputLng.addEventListener('change', updateMarkerFromInput);
-            
-            
+
+
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.formWrapper') || e.target.closest('.btn-location')) return;
                 card.classList.toggle('expanded');
@@ -253,52 +253,52 @@ const usahaHandler = (data) => {
                 if (card.classList.contains('expanded')) {
                     setTimeout(() => {
                         if (!mapContainer || !card.classList.contains('expanded')) return;
-                    
+
                         // Cek apakah ada data dari database (Input value)
                         const latVal = parseFloat(inputLat.value);
                         const lngVal = parseFloat(inputLng.value);
                         const hasData = !isNaN(latVal) && !isNaN(lngVal);
-                    
+
                         // Tentukan Pusat Peta: Kalau ada data pakai data, kalau kosong pakai Default Dompu
                         const initCenter = hasData ? [latVal, lngVal] : [defaultLat, defaultLong];
-                    
+
                         // --- SKENARIO A: Init Peta Pertama Kali ---
                         if (!mapContainer._leaflet_id) {
                             const map = L.map(mapContainer).setView(initCenter, 15);
-                    
+
                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                                 attribution: '&copy; OpenStreetMap contributors'
                             }).addTo(map);
-                    
+
                             mapContainer.mapInstance = map;
-                    
+
                             // PENTING: Panggil fungsi update ini segera setelah peta jadi.
                             // Fungsi ini otomatis akan mengecek input:
                             // - Kalau ada isi (dari DB) -> Marker Muncul.
                             // - Kalau kosong -> Marker Tidak Muncul (Peta bersih).
-                            updateMarkerFromInput(); 
-                    
+                            updateMarkerFromInput();
+
                             // Event Klik Peta (Memunculkan Marker dari kosong)
                             map.on('click', (e) => {
                                 const { lat, lng } = e.latlng;
-                                
+
                                 // Isi input dulu
                                 inputLat.value = lat.toFixed(7);
                                 inputLng.value = lng.toFixed(7);
-                                
+
                                 // Lalu panggil fungsi update untuk memunculkan marker
                                 updateMarkerFromInput();
                             });
-                            
+
                             map.invalidateSize();
-                        } 
-                        
+                        }
+
                         // --- SKENARIO B: Peta Sudah Ada (Re-open) ---
                         else if (mapContainer.mapInstance) {
                             mapContainer.mapInstance.invalidateSize();
-                            
+
                             // Sinkronisasi ulang (Siapa tahu user menghapus input saat card tertutup)
-                            updateMarkerFromInput(); 
+                            updateMarkerFromInput();
                         }
                     }, 400);
                 }
@@ -330,55 +330,55 @@ const usahaHandler = (data) => {
 
                             if (!status) {
                                 Swal.fire({
-                                        title: 'Mengirim Data...',
-                                        text: 'Mohon tunggu sebentar',
-                                        icon: 'info',
-                                        timer: 2500,
-                                        timerProgressBar: true,
-                                        showConfirmButton: false,
-                                        allowOutsideClick: false,
-                                        didOpen: () => Swal.showLoading()
-                                    }
+                                    title: 'Mengirim Data...',
+                                    text: 'Mohon tunggu sebentar',
+                                    icon: 'info',
+                                    timer: 2500,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                }
                                 ).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
                                         notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
                                     }
                                 });
+                            } else {
+                                // Lokasinya sesuai
+                                // Sembunyikan tombol kirim SEGERA setelah data sukses terkirim
+                                b[i + 1].style.display = 'none';
+
+                                fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
+                                    .then(() => {
+                                        Swal.fire({
+                                            title: 'Mengirim Data...',
+                                            text: 'Mohon tunggu sebentar',
+                                            icon: 'info',
+                                            timer: 2000,
+                                            timerProgressBar: true,
+                                            showConfirmButton: false,
+                                            allowOutsideClick: false,
+                                            didOpen: () => Swal.showLoading()
+                                        }).
+                                            then((result) => {
+                                                let cards = document.querySelectorAll('.hasil');
+                                                cards[i].remove();
+
+                                                if (result.dismiss === Swal.DismissReason.timer) {
+                                                    notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
+                                                }
+                                            })
+                                    })
+                                    .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
                             }
                         })
-                } else {
-                    // Lokasinya sesuai
-                    fetch(scriptURL, { method: 'POST', body: new FormData(form) })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok'); // Pastikan response oke sebelum parsing JSON
-                            return response.json();
-                        })
-                        .then(data => {
-                            // Sembunyikan tombol kirim SEGERA setelah data sukses terkirim
-                            b[i + 1].style.display = 'none';
-                                
-                            Swal.fire({
-                                title: 'Mengirim Data...',
-                                text: 'Mohon tunggu sebentar',
-                                icon: 'info',
-                                timer: 2000,
-                                timerProgressBar: true,
-                                showConfirmButton: false,
-                                allowOutsideClick: false,
-                                didOpen: () => Swal.showLoading()
-                            }).
-                        then((result) => {
-                            if (result.dismiss === Swal.DismissReason.timer) {
-                                notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
-                                filterUsaha();
-                            }
-                        })
-                        })
-                        .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
                 }
             });
         });
+    } else {
+        kosong.classList.remove('detail-hidden');
     }
 
 }
@@ -400,43 +400,43 @@ kecamatan.addEventListener('change', () => {
         status_usaha.disabled = false;
         switch (kdKec) {
             case "010":
-                kdDesa = ["001","002","003","004","005","006","007","008"];
+                kdDesa = ["001", "002", "003", "004", "005", "006", "007", "008"];
                 listDesa = ["HU\'U", "DAHA", "RASABOU", "CEMPI JAYA", "ADU", "SAWE", "JALA", "MARADA"];
                 break;
             case "011":
-                kdDesa = ["001","002","003","004","005","006"];
+                kdDesa = ["001", "002", "003", "004", "005", "006"];
                 listDesa = ["JAMBU", "LUNE", "WOKO", "RANGGO", "LEPADI", "TEMBA LAE"];
                 break;
             case "020":
-                kdDesa = ["001","002","004","005","006","007","008","009","010","011","012","013","014","015","016"];
+                kdDesa = ["001", "002", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014", "015", "016"];
                 listDesa = ["MBAWI", "DOREBARA", "KANDAI SATU", "KARIJAWA", "POTU", "BADA",
                     "BALI", "DOROTANGGA", "OO", "KATUA", "KARAMABURA", "KAREKE", "MANGGE NAE",
                     "MANGGE ASI", "SORISAKOLO"
                 ];
                 break;
             case "030":
-                kdDesa = ["001","002","003","004","005","006","007","008","009","010","011","012","013","014"];
+                kdDesa = ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014"];
                 listDesa = ["RIWO", "MADAPRAMA", "BARA", "NOWA", "WAWONDURU", "MATUA",
                     "MONTABARU", "KANDAI DUA", "SIMPASAI", "SANEO", "MUMBU", "BAKAJAYA",
-                    "RABABAKA","SERAKAPI"
+                    "RABABAKA", "SERAKAPI"
                 ];
                 break;
             case "040":
-                kdDesa = ["001","002","003","004","005","006"];
+                kdDesa = ["001", "002", "003", "004", "005", "006"];
                 listDesa = ["MBUJU", "TAROPO", "KRAMAT", "MALAJU", "LASI", "KIWU"];
                 break;
             case "050":
-                kdDesa = ["009","010","011","012","013","014","015","016"];
+                kdDesa = ["009", "010", "011", "012", "013", "014", "015", "016"];
                 listDesa = ["TA\'A", "KEMPO", "SORO", "KONTE", "SO NGGAJAH",
                     "TOLO KALO", "DORO KOBO", "SORO BARAT"];
                 break;
             case "051":
-                kdDesa = ["001","002","003","004","005","006","007","008","009","010","011","012"];
+                kdDesa = ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012"];
                 listDesa = ["KWANGKO", "NANGATUMPU", "BANGGO", "SORIUTU", "DOROMELO", "LANCI JAYA",
                     "NUSA JAYA", "SUKA DAMAI", "TANJU", "KAMPAS MECI", "TEKASIRE", "ANAMINA"];
                 break;
             case "060":
-                kdDesa = ["001","002","003","004","005","006","007","008","009","010","011","012"];
+                kdDesa = ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012"];
                 listDesa = ["DOROPETI", "BERINGIN JAYA", "PEKAT", "SORINOMO", "TAMBORA", "KADINDI",
                     "NANGAMIRO", "CALABAI", "NANGAKARA", "KADINDI BARAT", "SORI TATANGA", "KAROMBO"];
                 break;
@@ -465,7 +465,7 @@ function filterUsaha() {
                 query: kueriDasar,
                 callback: usahaHandler
             });
-            
+
         } else if (desa.value != '' && nama_usaha.value == '' && status_usaha.value == '') {
             // Desanya dipilih
             getSheetData({
@@ -523,7 +523,7 @@ function filterUsaha() {
                     callback: usahaHandler
                 });
             }
-            
+
         } else {
             // Semuanya terisi
             if (status_usaha.value != 'Lainnya') {
@@ -544,6 +544,3 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
-
-
-
