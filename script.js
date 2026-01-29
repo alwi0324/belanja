@@ -45,7 +45,7 @@ const usahaHandler = (data) => {
     
              <div class="info-usaha">
                 <div class="info-item">
-                    <span class="uppercase">${nmusaha[i]}</span>
+                    <span class="uppercase">${nmusaha[i].replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
                 </div>
                 <div class="info-item2">
                     <span class="${isActive[i]}">${keberadaan[i]}</span>
@@ -374,6 +374,33 @@ const usahaHandler = (data) => {
                                     .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
                             }
                         })
+                } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
+                    // Tidak ditemukan/tutup/ganda
+                    b[i + 1].style.display = 'none';
+
+                    fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
+                        .then(() => {
+                            Swal.fire({
+                                title: 'Mengirim Data...',
+                                text: 'Mohon tunggu sebentar',
+                                icon: 'info',
+                                timer: 2000,
+                                timerProgressBar: true,
+                                showConfirmButton: false,
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            }).
+                                then((result) => {
+                                    let cards = document.querySelectorAll('.hasil');
+                                    cards[i].remove();
+
+                                    if (result.dismiss === Swal.DismissReason.timer) {
+                                        notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
+                                    }
+                                })
+                        })
+                        .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
+
                 }
             });
         });
