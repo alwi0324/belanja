@@ -107,8 +107,8 @@ const usahaHandler = (data) => {
         // Fungsi Toggle Buka/Tutup Card
         const cards = document.querySelectorAll('.hasil');
         const semuaPeta = document.querySelectorAll('.peta');
-        const defaultLat = -8.5369965;
-        const defaultLong = 118.4635260;
+        const defaultLat = -8.543473154526659;
+        const defaultLong = 118.43727847426045;
         let latInput = document.querySelectorAll('input[name="latitude"]');
         let longInput = document.querySelectorAll('input[name="longitude"]');
         let btnLocs = document.querySelectorAll('.btn-location');
@@ -372,34 +372,34 @@ const usahaHandler = (data) => {
                                             })
                                     })
                                     .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
-                            }
-                        })
-                } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
-                    // Tidak ditemukan/tutup/ganda
-                    b[i + 1].style.display = 'none';
+                                }
+                            })
+                        } else if (hasilGc[i].value != 3 || hasilGc[i].value != '') {
+                            // Tidak ditemukan/tutup/ganda
+                            b[i + 1].style.display = 'none';
 
-                    fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
-                        .then(() => {
-                            Swal.fire({
-                                title: 'Mengirim Data...',
-                                text: 'Mohon tunggu sebentar',
-                                icon: 'info',
-                                timer: 2000,
-                                timerProgressBar: true,
-                                showConfirmButton: false,
-                                allowOutsideClick: false,
-                                didOpen: () => Swal.showLoading()
-                            }).
-                                then((result) => {
-                                    let cards = document.querySelectorAll('.hasil');
-                                    cards[i].remove();
+                            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
+                                .then(() => {
+                                    Swal.fire({
+                                        title: 'Mengirim Data...',
+                                        text: 'Mohon tunggu sebentar',
+                                        icon: 'info',
+                                        timer: 2000,
+                                        timerProgressBar: true,
+                                        showConfirmButton: false,
+                                        allowOutsideClick: false,
+                                        didOpen: () => Swal.showLoading()
+                                    }).
+                                        then((result) => {
+                                            let cards = document.querySelectorAll('.hasil');
+                                            cards[i].remove();
 
-                                    if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
-                                    }
+                                            if (result.dismiss === Swal.DismissReason.timer) {
+                                                notif('Berhasil', 'success', 'Usaha ini berhasil di-ground check');
+                                            }
+                                        })
                                 })
-                        })
-                        .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
+                                .catch(error => notif('Groundcheck gagal', 'error', 'Silakan periksa jaringan Anda'));
 
                 }
             });
