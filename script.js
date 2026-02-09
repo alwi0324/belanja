@@ -318,12 +318,12 @@ const usahaHandler = (data) => {
                 if (hasilGc[i].value == 3 && (latInput[i].value == '' || longInput[i].value == '')) {
                     notif('Gagal mengirim data', 'error', 'Jika status usahanya ditemukan harus ada koordinat');
                 } else if (hasilGc[i].value == 3 && latInput[i].value != '' && longInput[i].value != '') {
-                    // Ada lokasi tapi beda desa
-                    fetch('https://raw.githubusercontent.com/alwi0324/belanja/refs/heads/main/desa_non%20sls_turf.geojson')
+                    // Ada lokasi tapi beda kec
+                    fetch('https://raw.githubusercontent.com/alwi0324/belanja/refs/heads/main/Kecamatan%20di%20Dompu.geojson')
                         .then(res => res.json())
                         .then(dataSf => {
                             let poly = dataSf.features;
-                            let targetDesa = poly.find(p => p.properties.iddesa == `5205${hasil[i].kdkec}${hasil[i].kddesa}`);
+                            let targetDesa = poly.find(p => p.properties.idkec == `5205${hasil[i].kdkec}`);
 
                             let pinPoint = point([longInput[i].value, latInput[i].value]);
                             let status = booleanPointInPolygon(pinPoint, targetDesa);
@@ -342,7 +342,7 @@ const usahaHandler = (data) => {
                                 ).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmdesa.charAt(0).toUpperCase()}${targetDesa.properties.nmdesa.toLowerCase().slice(1)}`);
+                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmkec.charAt(0).toUpperCase()}${targetDesa.properties.nmkec.toLowerCase().slice(1)}`);
                                     }
                                 });
                             } else {
@@ -571,3 +571,4 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
