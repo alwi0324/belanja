@@ -342,7 +342,7 @@ const usahaHandler = (data) => {
                                 ).then((result) => {
                                     // Tampilkan Pop-up Sukses setelah timer habis
                                     if (result.dismiss === Swal.DismissReason.timer) {
-                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di ${targetDesa.properties.nmkec.charAt(0).toUpperCase()}${targetDesa.properties.nmkec.toLowerCase().slice(1)}`);
+                                        notif('Lokasi tagging salah', 'error', `Lokasi usaha ini ada di Kecamatan ${targetDesa.properties.nmkec.charAt(0).toUpperCase()}${targetDesa.properties.nmkec.toLowerCase().slice(1)}`);
                                     }
                                 });
                             } else {
@@ -571,4 +571,5 @@ function filterUsaha() {
 tombolFilter.addEventListener('click', () => {
     filterUsaha();
 });
+
 
