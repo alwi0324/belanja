@@ -33,7 +33,7 @@
                     
                     <!-- Tombol Mikrofon Voice Input -->
                     <button id="micBtn" type="button" onclick="mulaiDengar()" title="Tambah via Suara"
-                        class="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2.5 rounded transition-colors cursor-pointer flex items-center justify-center font-bold">
+                        class="bg-white hover:bg-purple-700 text-white px-3.5 py-2.5 rounded transition-colors cursor-pointer flex items-center justify-center font-bold">
                         🎤
                     </button>
                 </div>
@@ -275,69 +275,69 @@
         }
 
         function prosesInputSuara(teks) {
-            // Kamus Pemetaan Ucapan Suara -> Satuan Baku Dropdown
-            const unitMap = {
-                'pcs': 'pcs', 'pisis': 'pcs', 'buah': 'buah', 'biji': 'biji', 
-                'bungkus': 'bungkus', 'brambang': 'bungkus',
-                'pack': 'pack', 'pak': 'pack', 'peck': 'pack',
-                'dus': 'dus', 'dos': 'dus', 'karton': 'dus',
-                'butir': 'butir', 'telur': 'butir',
-                'botol': 'botol'
-            };
+    const unitMap = {
+        'pcs': 'pcs', 'pisis': 'pcs', 'buah': 'buah', 'biji': 'biji', 
+        'bungkus': 'bungkus', 'brambang': 'bungkus',
+        'pack': 'pack', 'pak': 'pack', 'peck': 'pack',
+        'dus': 'dus', 'dos': 'dus', 'karton': 'dus',
+        'butir': 'butir', 'telur': 'butir',
+        'botol': 'botol'
+    };
 
-            const itemsRaw = teks.split(/,|\bdan\b/gi);
-            let barangBerhasil = 0;
+    // 1. Normalisasi: Beri tanda koma setelah angka jika setelah angka langsung diikuti huruf
+    // Contoh: "pulpen 3 pensil 1" -> "pulpen 3, pensil 1"
+    let cleanTeks = teks.replace(/(\d+)\s+([a-zA-Z])/g, '$1, $2');
 
-            itemsRaw.forEach(itemStr => {
-                const words = itemStr.trim().split(/\s+/);
-                if (words.length === 0 || words[0] === '') return;
+    // 2. Pisahkan berdasarkan koma (,) atau kata "dan"
+    const itemsRaw = cleanTeks.split(/,|\bdan\b/gi);
+    let barangBerhasil = 0;
 
-                let detectedQty = "1";
-                let detectedUnit = "pcs";
-                let namaBarangArr = [];
+    itemsRaw.forEach(itemStr => {
+        const words = itemStr.trim().split(/\s+/);
+        if (words.length === 0 || words[0] === '') return;
 
-                for (let i = 0; i < words.length; i++) {
-                    const word = words[i];
-                    const cleanWord = word.toLowerCase();
+        let detectedQty = "1";
+        let detectedUnit = "pcs";
+        let namaBarangArr = [];
 
-                    // Cek alias satuan
-                    if (unitMap[cleanWord]) {
-                        detectedUnit = unitMap[cleanWord];
-                        continue;
-                    }
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const cleanWord = word.toLowerCase();
 
-                    // Cek angka murni
-                    if (/^\d+$/.test(cleanWord)) {
-                        const nextWord = words[i + 1] ? words[i + 1].toLowerCase() : null;
-                        const isNextWordUnit = nextWord && unitMap[nextWord];
-                        const isLastWord = (i === words.length - 1);
-
-                        if (isNextWordUnit || isLastWord || i === 0) {
-                            detectedQty = cleanWord;
-                            continue;
-                        }
-                    }
-
-                    namaBarangArr.push(word);
-                }
-
-                const namaFinal = namaBarangArr.join(' ').trim();
-
-                if (namaFinal) {
-                    tambahBelanja(namaFinal, detectedQty, detectedUnit);
-                    barangBerhasil++;
-                }
-            });
-
-            if (barangBerhasil > 0) {
-                sortListAZ();
-                updateTampilan();
-                saveBelanja();
-                notif("Berhasil Ditambahkan!", `${barangBerhasil} barang dimasukkan ke daftar.`, "success");
-            } else {
-                notif("Suara Kurang Jelas", "Sebutkan nama barang dengan jelas.", "info");
+            // Cek alias satuan
+            if (unitMap[cleanWord]) {
+                detectedUnit = unitMap[cleanWord];
+                continue;
             }
+
+            // Cek angka murni
+            if (/^\d+$/.test(cleanWord)) {
+                // Jika ditemukan angka, hampir dipastikan ini adalah Qty untuk item ini
+                detectedQty = cleanWord;
+                continue;
+            }
+
+            namaBarangArr.push(word);
         }
+
+        const namaFinal = namaBarangArr.join(' ').trim();
+
+        if (namaFinal) {
+            tambahBelanja(namaFinal, detectedQty, detectedUnit);
+            barangBerhasil++;
+        }
+    });
+
+    if (barangBerhasil > 0) {
+        sortListAZ();
+        updateTampilan();
+        saveBelanja();
+        notif("Berhasil Ditambahkan!", `${barangBerhasil} barang dimasukkan ke daftar.`, "success");
+    } else {
+        notif("Suara Kurang Jelas", "Sebutkan nama barang dengan jelas.", "info");
+    }
+}
+
 
         // Event Delegation
         document.addEventListener('click', (e) => {
