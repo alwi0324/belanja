@@ -45,24 +45,24 @@
                         <option value="botol">botol</option>
                     </select>
 
-                    <button id="tambah" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded py-2 transition-colors">Tambahkan</button>
+                    <button id="tambah" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded py-2 transition-colors cursor-pointer">Tambahkan</button>
                 </div>
             </div>
         </div>
 
-        <!-- List Belanjaan -->
-        <ol id="belanja" class="bg-white dark:bg-zinc-900 rounded-lg shadow-2xl p-4 max-h-80 overflow-y-auto space-y-2 hidden transition-colors duration-300"></ol>
+        <!-- List Belanjaan dengan penomoran list-decimal -->
+        <ol id="belanja" class="list-decimal list-inside bg-white dark:bg-zinc-900 rounded-lg shadow-2xl p-4 max-h-80 overflow-y-auto space-y-2 hidden transition-colors duration-300"></ol>
 
         <!-- Tombol Aksi Bawah -->
         <div id="busek" class="hidden flex shadow-2xl rounded-lg overflow-hidden">
-            <button onclick="kopas()" class="w-1/2 bg-cyan-500 hover:bg-cyan-600 text-white py-3 font-semibold text-sm transition-colors">Salin daftar</button>
-            <button onclick="hapus()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-3 font-semibold text-sm transition-colors">Bersihkan daftar</button>
+            <button onclick="kopas()" class="w-1/2 bg-cyan-500 hover:bg-cyan-600 text-white py-3 font-semibold text-sm transition-colors cursor-pointer">Salin daftar</button>
+            <button onclick="hapus()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-3 font-semibold text-sm transition-colors cursor-pointer">Bersihkan daftar</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Placeholder
+        // Placeholder Interaktif
         const pholders = ['Ketik nama barang di sini...', 'Klik nama barang untuk mencoret', 'Gunakan ikon pensil untuk mengedit'];
         let phIdx = 0;
         setInterval(() => {
@@ -79,6 +79,12 @@
         const list = document.getElementById('belanja');
         const busek = document.getElementById('busek');
         const darkModeBtn = document.getElementById('darkModeBtn');
+
+        // Format kapital huruf pertama
+        function capitalize(str) {
+            if (!str) return '';
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
 
         // Dark Mode Logic
         function setDarkMode(isDark) {
@@ -106,39 +112,51 @@
         function sortListAZ() {
             const items = Array.from(list.querySelectorAll('li'));
             items.sort((a, b) => {
-                const textA = a.querySelector('.item-text').innerText.toLowerCase();
-                const textB = b.querySelector('.item-text').innerText.toLowerCase();
-                return textA.localeCompare(textB);
+                const nameA = a.dataset.nama.toLowerCase();
+                const nameB = b.dataset.nama.toLowerCase();
+                return nameA.localeCompare(nameB);
             });
             items.forEach(item => list.appendChild(item));
         }
 
+        function renderItemContent(li, nama, qty, unit) {
+            nama = capitalize(nama);
+            li.dataset.nama = nama;
+            li.dataset.qty = qty;
+            li.dataset.unit = unit;
+
+            let textSpan = li.querySelector('.item-text');
+            if (!textSpan) {
+                textSpan = document.createElement('span');
+                textSpan.className = "item-text flex-1 cursor-pointer select-none font-medium text-lg ml-1";
+                li.appendChild(textSpan);
+            }
+            textSpan.innerText = `${nama} (${qty} ${unit})`;
+
+            let btnGroup = li.querySelector('.btn-group');
+            if (!btnGroup) {
+                btnGroup = document.createElement('div');
+                btnGroup.className = "btn-group flex items-center gap-2 ml-3 inline-flex";
+
+                const editBtn = document.createElement('button');
+                editBtn.className = "btn-edit p-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white transition-colors cursor-pointer";
+                editBtn.innerHTML = iconEdit;
+
+                const delBtn = document.createElement('button');
+                delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
+                delBtn.innerHTML = iconHapus;
+
+                btnGroup.appendChild(editBtn);
+                btnGroup.appendChild(delBtn);
+                li.appendChild(btnGroup);
+            }
+        }
+
         function tambahBelanja(barang, qty = "1", unit = "pcs") {
             const li = document.createElement('li');
-            li.className = "item flex items-center justify-between p-3 rounded bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 transition-all border border-gray-200 dark:border-zinc-700";
+            li.className = "item flex items-center justify-between p-3 rounded bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 transition-all border border-gray-200 dark:border-zinc-700 marker:font-bold marker:text-purple-500";
 
-            const textSpan = document.createElement('span');
-            textSpan.className = "item-text flex-1 cursor-pointer select-none font-medium text-lg";
-            textSpan.innerText = `${barang[0].toUpperCase()}${barang.slice(1)} (${qty} ${unit})`;
-            li.appendChild(textSpan);
-
-            const btnGroup = document.createElement('div');
-            btnGroup.className = "flex items-center gap-2 ml-3";
-
-            // Edit Btn
-            const editBtn = document.createElement('button');
-            editBtn.className = "btn-edit p-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white transition-colors cursor-pointer";
-            editBtn.innerHTML = iconEdit;
-
-            // Delete Btn
-            const delBtn = document.createElement('button');
-            delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
-            delBtn.innerHTML = iconHapus;
-
-            btnGroup.appendChild(editBtn);
-            btnGroup.appendChild(delBtn);
-            li.appendChild(btnGroup);
-
+            renderItemContent(li, barang, qty, unit);
             list.appendChild(li);
         }
 
@@ -188,21 +206,53 @@
 
         // Event Delegation
         document.addEventListener('click', (e) => {
-            // Edit Item
+            // Edit Item dengan Modal Kustom
             if (e.target.closest('.btn-edit')) {
                 const li = e.target.closest('li');
-                const span = li.querySelector('.item-text');
-                
+                const currNama = li.dataset.nama;
+                const currQty = li.dataset.qty;
+                const currUnit = li.dataset.unit;
+
+                const units = ['pcs', 'kg', 'gr', 'liter', 'pack', 'ikat', 'botol'];
+                const optionsHtml = units.map(u => `<option value="${u}" ${u === currUnit ? 'selected' : ''}>${u}</option>`).join('');
+
                 Swal.fire({
                     title: 'Edit Item',
-                    input: 'text',
-                    inputValue: span.innerText,
+                    html: `
+                        <div class="flex flex-col gap-3 text-left">
+                            <div>
+                                <label class="text-xs font-semibold text-gray-500">Nama Barang</label>
+                                <input id="swal-nama" class="swal2-input !m-0 !w-full" value="${currNama}">
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="w-1/2">
+                                    <label class="text-xs font-semibold text-gray-500">Qty</label>
+                                    <input id="swal-qty" type="number" min="1" class="swal2-input !m-0 !w-full" value="${currQty}">
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="text-xs font-semibold text-gray-500">Satuan</label>
+                                    <select id="swal-unit" class="swal2-select !m-0 !w-full !h-[48px] !mt-1">${optionsHtml}</select>
+                                </div>
+                            </div>
+                        </div>
+                    `,
                     showCancelButton: true,
                     confirmButtonText: 'Simpan',
-                    cancelButtonText: 'Batal'
+                    cancelButtonText: 'Batal',
+                    preConfirm: () => {
+                        const nama = document.getElementById('swal-nama').value.trim();
+                        const qty = document.getElementById('swal-qty').value || "1";
+                        const unit = document.getElementById('swal-unit').value;
+
+                        if (!nama) {
+                            Swal.showValidationMessage('Nama barang tidak boleh kosong');
+                            return false;
+                        }
+                        return { nama, qty, unit };
+                    }
                 }).then((res) => {
-                    if (res.isConfirmed && res.value.trim()) {
-                        span.innerText = res.value.trim();
+                    if (res.isConfirmed) {
+                        renderItemContent(li, res.value.nama, res.value.qty, res.value.unit);
                         sortListAZ();
                         saveBelanja();
                     }
