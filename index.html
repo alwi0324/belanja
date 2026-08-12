@@ -1,98 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="gaya.css">
-    <link rel="icon" href="cart.jpg" type="image/x-icon">
     <title>Daftar Belanjaan</title>
-    <meta property="og:title" content="Daftar Belanjaanku">
-    <meta property="og:description" content="List barang yang mau dibeli">
-    <meta property="og:image" itemprop="image" content="cart.jpg">
-    <style>
-        /* Tampilan Dark Mode */
-        body.dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
         }
-        body.dark-mode .box {
-            background-color: #1e1e1e;
-            color: #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        body.dark-mode input, body.dark-mode select {
-            background-color: #2b2b2b;
-            color: #fff;
-            border: 1px solid #444;
-        }
-        body.dark-mode ol li {
-            background-color: #2a2a2a;
-            color: #fff;
-        }
-
-        /* Layout Input Jumlah & Satuan */
-        .input-group {
-            display: flex;
-            gap: 5px;
-            margin-top: 8px;
-        }
-        .qty-input {
-            width: 65px;
-        }
-        .unit-select {
-            width: 85px;
-        }
-
-        /* Tombol Dark Mode */
-        .dark-mode-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: transparent;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        /* Tata Letak Item & Action Buttons */
-        li.item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .item-text {
-            flex-grow: 1;
-            cursor: pointer;
-        }
-        .action-btns {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: 10px;
-        }
-        .btn-edit, .btn-del {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
+    </script>
+    <link rel="icon" href="cart.jpg" type="image/x-icon">
 </head>
-<body>
-    <button id="darkModeBtn" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button>
+<body class="bg-gradient-to-br from-purple-600 to-cyan-400 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
-    <div class="container">
-        <div class="box">
-            <div style="margin-bottom: 15px;">
-                <h2>Daftar Belanjaan</h2>
-                <h4 id="buyed" class="hilang"></h4>
+    <!-- Toggle Dark Mode -->
+    <button id="darkModeBtn" class="fixed top-5 right-5 bg-white/20 backdrop-blur-md p-3 rounded-full text-2xl shadow-lg hover:scale-110 transition-transform cursor-pointer">🌙</button>
+
+    <div class="w-full max-w-lg flex flex-col gap-5">
+        <!-- Box Input Utama -->
+        <div class="bg-white dark:bg-zinc-900 p-6 rounded-lg shadow-2xl transition-colors duration-300">
+            <div class="text-center mb-4">
+                <h2 id="judul" class="text-2xl font-bold text-gray-800 dark:text-gray-100">Daftar Belanjaan</h2>
+                <h4 id="buyed" class="text-sm font-medium text-gray-500 dark:text-gray-400 hidden mt-1"></h4>
             </div>
             
-            <div id="grocery">
-                <input type="text" id="writeList" autocomplete="off" autofocus placeholder="Nama barang...">
-                <div class="input-group">
-                    <input type="number" id="writeQty" min="1" value="1" class="qty-input" placeholder="Qty">
-                    <select id="writeUnit" class="unit-select">
+            <div class="flex flex-col gap-2">
+                <input type="text" id="writeList" autocomplete="off" autofocus placeholder="Nama barang..." 
+                    class="w-full p-2.5 border border-gray-300 dark:border-zinc-700 rounded bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                
+                <div class="flex gap-2">
+                    <input type="number" id="writeQty" min="1" value="1" placeholder="Qty" 
+                        class="w-20 p-2 border border-gray-300 dark:border-zinc-700 rounded bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    
+                    <select id="writeUnit" 
+                        class="p-2 border border-gray-300 dark:border-zinc-700 rounded bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
                         <option value="pcs">pcs</option>
                         <option value="kg">kg</option>
                         <option value="gr">gr</option>
@@ -101,274 +44,245 @@
                         <option value="ikat">ikat</option>
                         <option value="botol">botol</option>
                     </select>
-                    <button id="tambah">Tambahkan</button>
+
+                    <button id="tambah" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded py-2 transition-colors">Tambahkan</button>
                 </div>
             </div>
         </div>
-        <ol id="belanja" class="hilang"></ol>
-        <div id="busek"></div>
+
+        <!-- List Belanjaan -->
+        <ol id="belanja" class="bg-white dark:bg-zinc-900 rounded-lg shadow-2xl p-4 max-h-80 overflow-y-auto space-y-2 hidden transition-colors duration-300"></ol>
+
+        <!-- Tombol Aksi Bawah -->
+        <div id="busek" class="hidden flex shadow-2xl rounded-lg overflow-hidden">
+            <button onclick="kopas()" class="w-1/2 bg-cyan-500 hover:bg-cyan-600 text-white py-3 font-semibold text-sm transition-colors">Salin daftar</button>
+            <button onclick="hapus()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white py-3 font-semibold text-sm transition-colors">Bersihkan daftar</button>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Placeholder Interaktif
-        let pholders = ['Ketik nama barang di sini...', 'Klik nama barang untuk mencoret', 'Gunakan ikon pensil untuk mengedit'];
-        function showPlaceHolders() {
-            let i = 0;
-            writeList.placeholder = pholders[i++ % pholders.length];
-            setInterval(() => {
-                writeList.placeholder = pholders[i++ % pholders.length];
-            }, 3000);
-        }
-        showPlaceHolders();
-        
-        // SVG Ikon
-        const isiHapus = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 18 18"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
-        const isiDone = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2" viewBox="0 0 18 18"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`;
-        const isiEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.034z"/></svg>`;
+        // Placeholder
+        const pholders = ['Ketik nama barang di sini...', 'Klik nama barang untuk mencoret', 'Gunakan ikon pensil untuk mengedit'];
+        let phIdx = 0;
+        setInterval(() => {
+            writeList.placeholder = pholders[phIdx++ % pholders.length];
+        }, 3000);
 
-        let jdl = document.querySelector('h2'),
-            list = document.querySelector('ol'),
-            darkModeBtn = document.getElementById('darkModeBtn');
+        // SVG Icons
+        const iconHapus = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>`;
+        const iconDone = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`;
+        const iconEdit = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.034z"/></svg>`;
+
+        const jdl = document.getElementById('judul');
+        const buyed = document.getElementById('buyed');
+        const list = document.getElementById('belanja');
+        const busek = document.getElementById('busek');
+        const darkModeBtn = document.getElementById('darkModeBtn');
 
         // Dark Mode Logic
-        darkModeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            darkModeBtn.innerText = isDark ? '☀️' : '🌙';
-            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
-        });
-
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-            darkModeBtn.innerText = '☀️';
+        function setDarkMode(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                darkModeBtn.innerText = '☀️';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.documentElement.classList.remove('dark');
+                darkModeBtn.innerText = '🌙';
+                localStorage.setItem('darkMode', 'disabled');
+            }
         }
 
-        tambah.addEventListener('click', addItem);
-        writeList.addEventListener('keyup', (e) => { if (e.keyCode == 13) addItem(); });
+        darkModeBtn.addEventListener('click', () => {
+            const isDark = !document.documentElement.classList.contains('dark');
+            setDarkMode(isDark);
+        });
 
-        // Pengurutan Alphabet A-Z
+        if (localStorage.getItem('darkMode') === 'enabled') setDarkMode(true);
+
+        tambah.addEventListener('click', addItem);
+        writeList.addEventListener('keyup', (e) => { if (e.key === 'Enter') addItem(); });
+
         function sortListAZ() {
-            let items = Array.from(list.querySelectorAll('li'));
+            const items = Array.from(list.querySelectorAll('li'));
             items.sort((a, b) => {
-                let textA = a.querySelector('.item-text').innerText.toLowerCase();
-                let textB = b.querySelector('.item-text').innerText.toLowerCase();
+                const textA = a.querySelector('.item-text').innerText.toLowerCase();
+                const textB = b.querySelector('.item-text').innerText.toLowerCase();
                 return textA.localeCompare(textB);
             });
             items.forEach(item => list.appendChild(item));
         }
 
-        function kopas() {
-            let temp = document.createElement('textarea');
-            document.body.appendChild(temp);
-            
-            let arr = ['Daftar Belanja:\n'];
-            let items = belanja.querySelectorAll('li');
-            items.forEach((li, idx) => {
-                let text = li.querySelector('.item-text').innerText;
-                if (!li.classList.contains('done')) {
-                    arr.push(`${idx+1}. ${text}`);
-                } else {
-                    arr.push(`${idx+1}. ~${text}~ ✅`);
-                }
-            });
-            
-            temp.value = arr.join('\n');
-            temp.select();
-            document.execCommand("copy");
-            temp.remove();
-            notif("Daftar Belanja Telah Disalin!", "", "success");
-        }
-
-        function muncul() {
-            buyed.classList.remove('hilang');
-            belanja.classList.remove('hilang');
-        }
-        function sembunyi() {
-            buyed.classList.add('hilang');
-            belanja.classList.add('hilang');
-        }
-        
-        function notif(judul, teks, ikon) {
-            swal.fire({
-                title: judul,
-                text: teks,
-                icon: ikon,
-                timer: 3000,
-                showConfirmButton: false
-            });
-        }
-
-        function hapus() {
-            Swal.fire({
-              title: "Apakah Anda Yakin?",
-              text: "Seluruh daftar belanja akan dibersihkan",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonColor: "#d33",
-              cancelButtonColor: "#3085d6",
-              confirmButtonText: "Ya, bersihkan",
-              cancelButtonText: "Batal"
-            }).then((result) => {
-              if (result.isConfirmed) {
-                jdl.innerText = 'Daftar Belanjaan';
-                sembunyi();
-                busek.style.display = 'none';
-                belanja.innerHTML = '';
-                saveBelanja();
-                notif("Berhasil!", "Daftar Belanja Telah Dibersihkan", "success");
-              }
-            });
-        }
-
         function tambahBelanja(barang, qty = "1", unit = "pcs") {
-            let item = document.createElement('li');
-            item.classList.add('item');
-            
-            let textSpan = document.createElement('span');
-            textSpan.classList.add('item-text');
+            const li = document.createElement('li');
+            li.className = "item flex items-center justify-between p-3 rounded bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 transition-all border border-gray-200 dark:border-zinc-700";
+
+            const textSpan = document.createElement('span');
+            textSpan.className = "item-text flex-1 cursor-pointer select-none font-medium text-lg";
             textSpan.innerText = `${barang[0].toUpperCase()}${barang.slice(1)} (${qty} ${unit})`;
-            item.appendChild(textSpan);
+            li.appendChild(textSpan);
 
-            // Container Tombol
-            let actionContainer = document.createElement('div');
-            actionContainer.classList.add('action-btns');
+            const btnGroup = document.createElement('div');
+            btnGroup.className = "flex items-center gap-2 ml-3";
 
-            // Tombol Edit
-            let editBtn = document.createElement('span');
-            editBtn.classList.add('btn-edit');
-            editBtn.innerHTML = isiEdit;
-            actionContainer.appendChild(editBtn);
+            // Edit Btn
+            const editBtn = document.createElement('button');
+            editBtn.className = "btn-edit p-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white transition-colors cursor-pointer";
+            editBtn.innerHTML = iconEdit;
 
-            // Tombol Hapus
-            let rmvBtn = document.createElement('span');
-            rmvBtn.classList.add('btn-del');
-            rmvBtn.innerHTML = isiHapus;
-            actionContainer.appendChild(rmvBtn);
+            // Delete Btn
+            const delBtn = document.createElement('button');
+            delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
+            delBtn.innerHTML = iconHapus;
 
-            item.appendChild(actionContainer);
-            list.append(item);
+            btnGroup.appendChild(editBtn);
+            btnGroup.appendChild(delBtn);
+            li.appendChild(btnGroup);
+
+            list.appendChild(li);
         }
 
         function addItem() {
-            let data = writeList.value.trim();
-            let qty = writeQty.value || "1";
-            let unit = writeUnit.value;
+            const data = writeList.value.trim();
+            const qty = writeQty.value || "1";
+            const unit = writeUnit.value;
 
-            if (data == '') {
+            if (!data) {
                 notif("Isian Tidak Boleh Kosong!", "", "error");
                 return;
             }
 
             if (data.includes(',')) {
-                let items = data.split(",");
-                items.forEach(x => {
-                    x = x.trim();
-                    if (x) tambahBelanja(x, qty, unit);
+                data.split(",").forEach(x => {
+                    const clean = x.trim();
+                    if (clean) tambahBelanja(clean, qty, unit);
                 });
             } else {
                 tambahBelanja(data, qty, unit);
             }
 
             sortListAZ();
-
-            jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-            buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
-            muncul();
-            busek.style.display = 'block';
-            busek.innerHTML = `<button class="salinBtn" onclick="kopas();">Salin daftar</button><button class="hapusBtn" onclick="hapus();">Bersihkan daftar</button>`;
-            
+            updateTampilan();
             writeList.value = "";
             writeQty.value = "1";
             saveBelanja();
         }
 
-        // Fungsi penanganan edit item
-        function triggerEdit(span) {
-            let currentText = span.innerText;
-            Swal.fire({
-                title: 'Edit Item Belanja',
-                input: 'text',
-                inputValue: currentText,
-                showCancelButton: true,
-                confirmButtonText: 'Simpan',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed && result.value.trim() !== '') {
-                    span.innerText = result.value.trim();
-                    sortListAZ();
-                    saveBelanja();
-                }
-            });
+        function updateTampilan() {
+            const total = list.querySelectorAll('li').length;
+            const done = list.querySelectorAll('li.done').length;
+
+            if (total > 0) {
+                jdl.innerText = `Daftar Belanjaan (${total})`;
+                buyed.innerText = `Sudah terbeli: ${done}`;
+                buyed.classList.remove('hidden');
+                list.classList.remove('hidden');
+                busek.classList.remove('hidden');
+            } else {
+                jdl.innerText = 'Daftar Belanjaan';
+                buyed.classList.add('hidden');
+                list.classList.add('hidden');
+                busek.classList.add('hidden');
+            }
         }
-        
+
         // Event Delegation
-        document.addEventListener('click', e => {
-            // Klik Tombol Edit (Ikon Pensil)
+        document.addEventListener('click', (e) => {
+            // Edit Item
             if (e.target.closest('.btn-edit')) {
-                let li = e.target.closest('li');
-                let span = li.querySelector('.item-text');
-                triggerEdit(span);
+                const li = e.target.closest('li');
+                const span = li.querySelector('.item-text');
+                
+                Swal.fire({
+                    title: 'Edit Item',
+                    input: 'text',
+                    inputValue: span.innerText,
+                    showCancelButton: true,
+                    confirmButtonText: 'Simpan',
+                    cancelButtonText: 'Batal'
+                }).then((res) => {
+                    if (res.isConfirmed && res.value.trim()) {
+                        span.innerText = res.value.trim();
+                        sortListAZ();
+                        saveBelanja();
+                    }
+                });
                 return;
             }
 
-            // Tandai selesai (Klik Teks Barang)
+            // Coret Item Done
             if (e.target.classList.contains('item-text')) {
-                let li = e.target.closest('li');
+                const li = e.target.closest('li');
                 li.classList.toggle('done');
-                buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
                 
-                let rmvBtn = li.querySelector('.btn-del');
-                rmvBtn.innerHTML = li.classList.contains('done') ? isiDone : isiHapus;
+                const span = li.querySelector('.item-text');
+                const delBtn = li.querySelector('.btn-del');
+
+                if (li.classList.contains('done')) {
+                    span.classList.add('line-through', 'opacity-40');
+                    delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
+                    delBtn.innerHTML = iconDone;
+                } else {
+                    span.classList.remove('line-through', 'opacity-40');
+                    delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
+                    delBtn.innerHTML = iconHapus;
+                }
+
+                updateTampilan();
                 saveBelanja();
                 return;
             }
 
-            // Hapus item (Ikon Silang)
+            // Hapus Item
             if (e.target.closest('.btn-del')) {
-                let li = e.target.closest('li');
-                li.remove();
-                
-                jdl.innerText = document.querySelectorAll('li').length ? `Daftar Belanjaan (${document.querySelectorAll('li').length})` : 'Daftar Belanjaan';
-                buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
-
-                if (!list.querySelectorAll('li').length) {
-                    sembunyi();
-                    busek.style.display = 'none';
-                }
+                e.target.closest('li').remove();
+                updateTampilan();
                 saveBelanja();
             }
         });
 
+        function kopas() {
+            const arr = ['Daftar Belanja:\n'];
+            list.querySelectorAll('li').forEach((li, idx) => {
+                const txt = li.querySelector('.item-text').innerText;
+                arr.push(li.classList.contains('done') ? `${idx+1}. ~${txt}~ ✅` : `${idx+1}. ${txt}`);
+            });
+            navigator.clipboard.writeText(arr.join('\n'));
+            notif("Daftar Belanja Telah Disalin!", "", "success");
+        }
+
+        function hapus() {
+            Swal.fire({
+                title: "Apakah Anda Yakin?",
+                text: "Seluruh daftar belanja akan dibersihkan",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#e11d48",
+                confirmButtonText: "Ya, bersihkan",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    list.innerHTML = '';
+                    updateTampilan();
+                    saveBelanja();
+                    notif("Berhasil!", "Daftar Belanja Telah Dibersihkan", "success");
+                }
+            });
+        }
+
+        function notif(judul, teks, ikon) {
+            Swal.fire({ title: judul, text: teks, icon: ikon, timer: 2000, showConfirmButton: false });
+        }
+
         function saveBelanja() {
-            localStorage.setItem('belanjaan', belanja.innerHTML);
-            localStorage.setItem('terbeli', list.querySelectorAll('li.done').length);
+            localStorage.setItem('belanjaan_html', list.innerHTML);
         }
 
         function loadBelanja() {
-            if (localStorage.getItem('terbeli') == null || localStorage.getItem('terbeli') == '0') {
-                buyed.classList.add('hilang');
-            } else {
-                buyed.classList.remove('hilang');
-                buyed.innerText = `Sudah terbeli: ${localStorage.getItem('terbeli')}`;
-            }
-            
-            if (!localStorage.getItem('belanjaan')) {
-                jdl.innerText = 'Daftar Belanjaan';
-                belanja.classList.add('hilang');
-                busek.style.display = 'none';
-            } else {
-                belanja.innerHTML = localStorage.getItem('belanjaan');
-                if (list.querySelectorAll('li').length > 0) {
-                    jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
-                    muncul();
-                    busek.style.display = 'block';
-                    busek.innerHTML = `<button class="salinBtn" onclick="kopas();">Salin daftar</button><button class="hapusBtn" onclick="hapus();">Bersihkan daftar</button>`;
-                } else {
-                    jdl.innerText = 'Daftar Belanjaan';
-                    sembunyi();
-                    busek.style.display = 'none';
-                }
+            const saved = localStorage.getItem('belanjaan_html');
+            if (saved) {
+                list.innerHTML = saved;
+                updateTampilan();
             }
         }
 
