@@ -151,6 +151,20 @@
 
         loadBelanja();
 
+        function sortListAZ() {
+            let items = Array.from(list.querySelectorAll('li'));
+            
+            // Urutkan berdasarkan teks item (mengabaikan perbedaan huruf besar/kecil)
+            items.sort((a, b) => {
+                let textA = a.innerText.toLowerCase();
+                let textB = b.innerText.toLowerCase();
+                return textA.localeCompare(textB);
+            });
+        
+            // Masukkan kembali element li yang sudah terurut ke dalam ol
+            items.forEach(item => list.appendChild(item));
+        }
+        
         function addItem() {
             let data = writeList.value;
             if (data == '') {
@@ -159,22 +173,26 @@
                 if (data.includes(". ")) {
                     let dataNew = data.split(". ").slice(1),
                         hasil = [];
-                        for (let i = 0; i < dataNew.length-1; i++) {
-                            hasil.push(dataNew[i].slice(0,-2));
-                        }
-                        hasil.push(dataNew[dataNew.length-1]);
-                        hasil.forEach(x => tambahBelanja(x));
+                    for (let i = 0; i < dataNew.length-1; i++) {
+                        hasil.push(dataNew[i].slice(0,-2));
+                    }
+                    hasil.push(dataNew[dataNew.length-1]);
+                    hasil.forEach(x => tambahBelanja(x));
                 } else {
                     if(data.includes(',')) {
                         let items = data.split(",");
                         items.forEach(x => {
                             x = x.trim();
-                            tambahBelanja(x);
+                            if (x) tambahBelanja(x);
                         });
                     } else {
                         tambahBelanja(data.trim());
                     }
                 }
+        
+                // Urutkan daftar elemen <li> dari A-Z
+                sortListAZ();
+        
                 jdl.innerText = `Daftar Belanjaan (${document.querySelectorAll('li').length})`;
                 buyed.innerText = `Sudah terbeli: ${list.querySelectorAll('li.done').length}`;
                 muncul();
@@ -183,7 +201,6 @@
                 writeList.value = "";
                 saveBelanja();
             }
-            
         }
         
         // Event delegation
