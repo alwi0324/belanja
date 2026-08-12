@@ -27,8 +27,16 @@
             </div>
             
             <div class="flex flex-col gap-2">
-                <input type="text" id="writeList" autocomplete="off" autofocus placeholder="Nama barang..." 
-                    class="w-full p-2.5 border border-gray-300 dark:border-zinc-700 rounded bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <div class="flex gap-2">
+                    <input type="text" id="writeList" autocomplete="off" autofocus placeholder="Nama barang..." 
+                        class="w-full p-2.5 border border-gray-300 dark:border-zinc-700 rounded bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    
+                    <!-- Tombol Mikrofon Voice Input -->
+                    <button id="micBtn" type="button" onclick="mulaiDengar()" title="Tambah via Suara"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2.5 rounded transition-colors cursor-pointer flex items-center justify-center font-bold">
+                        🎤
+                    </button>
+                </div>
                 
                 <div class="flex gap-2">
                     <input type="number" id="writeQty" min="1" value="1" placeholder="Qty" 
@@ -63,7 +71,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Placeholder Interaktif
-        const pholders = ['Ketik nama barang di sini...', 'Klik nama barang untuk mencoret', 'Gunakan ikon pensil untuk mengedit'];
+        const pholders = ['Ketik nama barang...', 'Coba klik tombol 🎤 untuk bicara', 'Klik nama barang untuk mencoret'];
         let phIdx = 0;
         setInterval(() => {
             writeList.placeholder = pholders[phIdx++ % pholders.length];
@@ -204,9 +212,85 @@
             }
         }
 
+        // --- Fitur Speech Recognition (Voice Input) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        function mulaiDengar() {
+            if (!SpeechRecognition) {
+                notif("Tidak Didukung", "Fitur ini memerlukan browser dengan dukungan Speech Recognition (Chrome/Edge).", "warning");
+                return;
+            }
+
+            const micBtn = document.getElementById('micBtn');
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            // Indikator visual saat merekam
+            micBtn.classList.add('animate-pulse', '!bg-rose-600');
+            micBtn.innerText = '🔴';
+
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const hasilSuara = event.results[0][0].transcript.toLowerCase();
+                prosesInputSuara(hasilSuara);
+            };
+
+            recognition.onspeechend = () => {
+                recognition.stop();
+                resetMicBtn();
+            };
+
+            recognition.onerror = (event) => {
+                resetMicBtn();
+                if (event.error === 'not-allowed') {
+                    notif("Izin Ditolak", "Mohon berikan izin akses mikrofon di setelan browser/situs.", "error");
+                } else {
+                    notif("Gagal Mendengar", "Suara tidak jelas atau terjadi koneksi error.", "error");
+                }
+            };
+
+            function resetMicBtn() {
+                micBtn.classList.remove('animate-pulse', '!bg-rose-600');
+                micBtn.innerText = '🎤';
+            }
+        }
+
+        function prosesInputSuara(teks) {
+            const listSatuan = ['pcs', 'kg', 'gr', 'liter', 'pack', 'ikat', 'botol'];
+            let words = teks.split(' ');
+
+            let detectedQty = "1";
+            let detectedUnit = "pcs";
+            let namaBarangArr = [];
+
+            words.forEach(word => {
+                if (!isNaN(word)) {
+                    detectedQty = word;
+                } else if (listSatuan.includes(word)) {
+                    detectedUnit = word;
+                } else {
+                    namaBarangArr.push(word);
+                }
+            });
+
+            const namaFinal = namaBarangArr.join(' ');
+
+            if (namaFinal) {
+                document.getElementById('writeList').value = namaFinal;
+                document.getElementById('writeQty').value = detectedQty;
+                document.getElementById('writeUnit').value = detectedUnit;
+                addItem();
+            } else {
+                notif("Suara Kurang Jelas", "Sebutkan nama barang beserta jumlah/satuannya (misal: Apel 2 pack)", "info");
+            }
+        }
+
         // Event Delegation
         document.addEventListener('click', (e) => {
-            // Edit Item dengan Modal Kustom
+            // Edit Item
             if (e.target.closest('.btn-edit')) {
                 const li = e.target.closest('li');
                 const currNama = li.dataset.nama;
