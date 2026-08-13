@@ -89,12 +89,13 @@
         // Placeholder Interaktif yang Mengedukasi Seluruh Perintah Suara
         const pholders = [
             'Ketik nama barang...',
-            '🗣️ Ucapkan "2 telur" untuk menambah',
-            '🗣️ Ucapkan "hapus [nama]" untuk membuang',
-            '🗣️ Ucapkan "kurangi [nama]" untuk mengurangi',
-            '🗣️ Ucapkan "salin daftar" untuk menyalin',
-            '🗣️ Ucapkan "bersihkan" untuk menghapus semua',
-            '🗣️ Ucapkan "stop" / "sudah" untuk mengakhiri'
+            'Ucapkan "garam 2" untuk menambah',
+            'Ucapkan "coret garam" untuk centang',
+            'Ucapkan "hapus [barang]" untuk menghapus',
+            'Ucapkan "kurangi [barang]" untuk mengurangi',
+            'Ucapkan "salin" untuk menyalin',
+            'Ucapkan "bersihkan" untuk menghapus semua',
+            'Ucapkan "stop"/"sudah" untuk mengakhiri'
         ];
         let phIdx = 0;
         setInterval(() => {
@@ -361,7 +362,7 @@
             }
 
             // 2. PERINTAH: SALIN DAFTAR
-            if (/\b(salin|salin daftar|kopas)\b/i.test(cleanInput)) {
+            if (/\b(salin|salin daftar)\b/i.test(cleanInput)) {
                 if (list.querySelectorAll('li').length === 0) {
                     notif("Daftar Kosong", "Tidak ada barang yang bisa disalin.", "warning");
                     return;
@@ -456,6 +457,43 @@
                 }
                 return;
             }
+
+            // ==========================================
+    // PERINTAH: CORET / CENTANG BARANG (Contoh: "coret garam", "centang telur")
+    // ==========================================
+    if (/^(coret|centang|check)\s+/i.test(cleanInput)) {
+        const namaTarget = cleanInput.replace(/^(coret|centang|check|sudah|selesai)\s+/, '').trim();
+        
+        const targetLi = Array.from(list.querySelectorAll('li')).find(
+            li => li.dataset.nama.toLowerCase() === namaTarget
+        );
+
+        if (targetLi) {
+            // Toggle status coret/done
+            targetLi.classList.toggle('done');
+            
+            const span = targetLi.querySelector('.item-text');
+            const delBtn = targetLi.querySelector('.btn-del');
+
+            if (targetLi.classList.contains('done')) {
+                span.classList.add('line-through', 'opacity-40');
+                delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
+                delBtn.innerHTML = iconDone;
+                notif("Barang Dicoret", `"${capitalize(namaTarget)}" telah ditandai selesai.`, "success");
+            } else {
+                span.classList.remove('line-through', 'opacity-40');
+                delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
+                delBtn.innerHTML = iconHapus;
+                notif("Coretan Dilepas", `"${capitalize(namaTarget)}" dikembalikan ke daftar aktif.`, "info");
+            }
+
+            updateTampilan();
+            saveBelanja();
+        } else {
+            notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ada di daftar.`, "warning");
+        }
+        return;
+        }
 
             // 6. LOGIKA PENAMBAHAN BARANG
             const unitMap = {
