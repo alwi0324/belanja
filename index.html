@@ -459,7 +459,7 @@
             }
 
             // ==========================================
-    // PERINTAH: CORET / CENTANG BARANG (Contoh: "coret garam", "centang telur")
+    // PERINTAH: CORET / CENTANG BARANG (Pindah ke Paling Atas)
     // ==========================================
     if (/^(coret|centang|check)\s+/i.test(cleanInput)) {
         const namaTarget = cleanInput.replace(/^(coret|centang|check|sudah|selesai)\s+/, '').trim();
@@ -479,11 +479,19 @@
                 span.classList.add('line-through', 'opacity-40');
                 delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
                 delBtn.innerHTML = iconDone;
-                notif("Barang Dicoret", `"${capitalize(namaTarget)}" telah ditandai selesai.`, "success");
+
+                // 🚀 Pindahkan elemen ini ke paling atas list (urutan pertama)
+                list.insertBefore(targetLi, list.firstChild);
+
+                notif("Barang Dicoret", `"${capitalize(namaTarget)}" ditandai selesai dan dipindah ke atas.`, "success");
             } else {
                 span.classList.remove('line-through', 'opacity-40');
                 delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
                 delBtn.innerHTML = iconHapus;
+
+                // Jika coretan dilepas, kembalikan urutan alfabet daftar
+                sortListAZ();
+
                 notif("Coretan Dilepas", `"${capitalize(namaTarget)}" dikembalikan ke daftar aktif.`, "info");
             }
 
@@ -493,7 +501,7 @@
             notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ada di daftar.`, "warning");
         }
         return;
-        }
+    }
 
             // 6. LOGIKA PENAMBAHAN BARANG
             const unitMap = {
