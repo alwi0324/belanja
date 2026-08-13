@@ -328,58 +328,129 @@
         }
 
         function prosesFraseSuara(teks) {
-            const unitMap = {
-                'pcs': 'pcs', 'pisis': 'pcs', 'buah': 'buah', 'biji': 'biji', 
-                'bungkus': 'bungkus', 'brambang': 'bungkus',
-                'pack': 'pack', 'pak': 'pack', 'peck': 'pack',
-                'dus': 'dus', 'dos': 'dus', 'karton': 'dus',
-                'butir': 'butir', 'telur': 'butir',
-                'botol': 'botol'
-            };
+    const cleanInput = teks.toLowerCase().trim();
 
-            let cleanTeks = teks
-                .toLowerCase()
-                .replace(/\b(dan|terus|lalu|sama)\b/gi, ',')
-                .replace(/(\d+)\s+([a-zA-Z])/g, '$1, $2');
+    // ==========================================
+    // 1. PERINTAH: HAPUS BARANG (Contoh: "hapus hasil")
+    // ==========================================
+    if (cleanInput.startsWith('hapus ')) {
+        // Ambil nama barang setelah kata "hapus "
+        const namaTarget = cleanInput.replace(/^hapus\s+/, '').trim();
+        
+        // Cari item di DOM (case-insensitive)
+        const targetLi = Array.from(list.querySelectorAll('li')).find(
+            li => li.dataset.nama.toLowerCase() === namaTarget
+        );
 
-            const itemsRaw = cleanTeks.split(',');
+        if (targetLi) {
+            targetLi.remove();
+            sortListAZ();
+            updateTampilan();
+            saveBelanja();
+            notif("Berhasil Dihapus", `Barang "${capitalize(namaTarget)}" telah dihapus.`, "success");
+        } else {
+            notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ada di daftar.`, "warning");
+        }
+        return; // Hentikan eksekusi agar tidak dianggap menambah barang
+    }
 
-            itemsRaw.forEach(itemStr => {
-                const words = itemStr.trim().split(/\s+/);
-                if (words.length === 0 || words[0] === '') return;
+    // ==========================================
+    // 2. PERINTAH: KURANGI BARANG (Contoh: "kurangi garam")
+    // ==========================================
+    if (cleanInput.startsWith('kurangi ')) {
+        let sisaTeks = cleanInput.replace(/^kurangi\s+/, '').trim();
+        
+        // Cek apakah user sebut angka spesifik (misal: "kurangi 2 garam")
+        let qtyKurang = 1;
+        const matchQty = sisaTeks.match(/^(\d+)\s+(.+)/);
+        if (matchQty) {
+            qtyKurang = parseInt(matchQty[1], 10);
+            sisaTeks = matchQty[2].trim();
+        }
 
-                let detectedQty = "1";
-                let detectedUnit = "pcs";
-                let namaBarangArr = [];
+        const namaTarget = sisaTeks;
+        const targetLi = Array.from(list.querySelectorAll('li')).find(
+            li => li.dataset.nama.toLowerCase() === namaTarget
+        );
 
-                for (let i = 0; i < words.length; i++) {
-                    const word = words[i];
-                    const cleanWord = word.toLowerCase();
+        if (targetLi) {
+            const currQty = parseInt(targetLi.dataset.qty, 10) || 1;
+            const newQty = currQty - qtyKurang;
 
-                    if (unitMap[cleanWord]) {
-                        detectedUnit = unitMap[cleanWord];
-                        continue;
-                    }
-
-                    if (/^\d+$/.test(cleanWord)) {
-                        detectedQty = cleanWord;
-                        continue;
-                    }
-
-                    namaBarangArr.push(word);
-                }
-
-                const namaFinal = namaBarangArr.join(' ').trim();
-
-                if (namaFinal) {
-                    tambahBelanja(namaFinal, detectedQty, detectedUnit);
-                }
-            });
+            if (newQty <= 0) {
+                // Jika sisa kuantitas <= 0, hapus item secara otomatis
+                targetLi.remove();
+                notif("Barang Dihapus", `Kuantitas "${capitalize(namaTarget)}" habis dan telah dihapus.`, "info");
+            } else {
+                // Perbarui kuantitas yang tersisa
+                renderItemContent(targetLi, targetLi.dataset.nama, newQty.toString(), targetLi.dataset.unit);
+                notif("Berhasil Dikurangi", `Kuantitas "${capitalize(namaTarget)}" berkurang jadi ${newQty}.`, "success");
+            }
 
             sortListAZ();
             updateTampilan();
             saveBelanja();
+        } else {
+            notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ditemukan di daftar.`, "warning");
         }
+        return; // Hentikan eksekusi
+    }
+
+    // ==========================================
+    // 3. LOGIKA PENAMBAHAN BARANG (Kode Bawaan)
+    // ==========================================
+    const unitMap = {
+        'pcs': 'pcs', 'pisis': 'pcs', 'buah': 'buah', 'biji': 'biji', 
+        'bungkus': 'bungkus', 'brambang': 'bungkus',
+        'pack': 'pack', 'pak': 'pack', 'peck': 'pack',
+        'dus': 'dus', 'dos': 'dus', 'karton': 'dus',
+        'butir': 'butir', 'telur': 'butir',
+        'botol': 'botol'
+    };
+
+    let cleanTeks = teks
+        .toLowerCase()
+        .replace(/\b(dan|terus|lalu|sama)\b/gi, ',')
+        .replace(/(\d+)\s+([a-zA-Z])/g, '$1, $2');
+
+    const itemsRaw = cleanTeks.split(',');
+
+    itemsRaw.forEach(itemStr => {
+        const words = itemStr.trim().split(/\s+/);
+        if (words.length === 0 || words[0] === '') return;
+
+        let detectedQty = "1";
+        let detectedUnit = "pcs";
+        let namaBarangArr = [];
+
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const cleanWord = word.toLowerCase();
+
+            if (unitMap[cleanWord]) {
+                detectedUnit = unitMap[cleanWord];
+                continue;
+            }
+
+            if (/^\d+$/.test(cleanWord)) {
+                detectedQty = cleanWord;
+                continue;
+            }
+
+            namaBarangArr.push(word);
+        }
+
+        const namaFinal = namaBarangArr.join(' ').trim();
+
+        if (namaFinal) {
+            tambahBelanja(namaFinal, detectedQty, detectedUnit);
+        }
+    });
+
+    sortListAZ();
+    updateTampilan();
+    saveBelanja();
+}
 
         // Event Delegation
         document.addEventListener('click', (e) => {
