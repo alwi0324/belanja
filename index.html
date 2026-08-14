@@ -503,6 +503,55 @@
         return;
     }
 
+            // ==========================================
+    // PERINTAH: UBAH / GANTI NAMA BARANG
+    // Contoh: "ganti garam ke gula", "ubah endog jadi telur"
+    // ==========================================
+    if (/^(ganti|ubah)\s+/i.test(cleanInput)) {
+        // Regex untuk menangkap namaLama dan namaBaru dipisahkan oleh 'ke' atau 'jadi'
+        const matchUbah = cleanInput.match(/^(?:ganti|ubah)\s+(.+?)\s+(?:ke|jadi)\s+(.+)$/i);
+
+        if (matchUbah) {
+            const namaLama = matchUbah[1].trim();
+            const namaBaru = matchUbah[2].trim();
+
+            const targetLi = Array.from(list.querySelectorAll('li')).find(
+                li => li.dataset.nama.toLowerCase() === namaLama
+            );
+
+            if (targetLi) {
+                const currentQty = targetLi.dataset.qty;
+                const currentUnit = targetLi.dataset.unit;
+
+                // Cek apakah nama baru sudah ada di daftar lain
+                const existingBaru = Array.from(list.querySelectorAll('li')).find(
+                    li => li !== targetLi && li.dataset.nama.toLowerCase() === namaBaru.toLowerCase()
+                );
+
+                if (existingBaru) {
+                    // Jika barang dengan nama baru sudah ada, gabungkan kuantitasnya
+                    const newQty = (parseInt(existingBaru.dataset.qty, 10) || 1) + (parseInt(currentQty, 10) || 1);
+                    renderItemContent(existingBaru, existingBaru.dataset.nama, newQty.toString(), existingBaru.dataset.unit);
+                    targetLi.remove(); // Hapus item lama yang diganti
+                    notif("Digabungkan", `"${capitalize(namaLama)}" diganti jadi "${capitalize(namaBaru)}" & kuantitas digabung.`, "success");
+                } else {
+                    // Update item dengan nama baru
+                    renderItemContent(targetLi, namaBaru, currentQty, currentUnit);
+                    notif("Berhasil Diubah", `"${capitalize(namaLama)}" diubah menjadi "${capitalize(namaBaru)}".`, "success");
+                }
+
+                sortListAZ();
+                updateTampilan();
+                saveBelanja();
+            } else {
+                notif("Tidak Ditemukan", `Barang "${namaLama}" tidak ada di daftar.`, "warning");
+            }
+        } else {
+            notif("Format Salah", "Gunakan format: 'ganti [nama lama] ke [nama baru]'", "info");
+        }
+        return;
+    }
+
             // 6. LOGIKA PENAMBAHAN BARANG
             const unitMap = {
                 'pcs': 'pcs', 'pisis': 'pcs', 'buah': 'buah', 'biji': 'biji', 
