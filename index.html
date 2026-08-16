@@ -91,6 +91,7 @@
             'Ketik nama barang...',
             'Ucapkan "garam 2" untuk menambah',
             'Ucapkan "coret garam" untuk centang',
+            'Ucapkan "coret semua" untuk centang semua barang',
             'Ucapkan "hapus [barang]" untuk menghapus',
             'Ucapkan "kurangi [barang]" untuk mengurangi',
             'Ucapkan "ganti garam ke gula" untuk mengubah',
@@ -311,7 +312,7 @@
                         stopDengar(true);
                     }
                 }
-            };
+            }
 
             recognition.start();
             notif("Mikrofon Aktif", "Bicara sekarang... (Ucapkan 'STOP' atau 'SUDAH' jika selesai)", "info");
@@ -459,6 +460,38 @@
                 return;
             }
 
+            if (/^(coret|centang|check)\s+semua$/i.test(cleanInput)) {
+        const allItems = Array.from(list.querySelectorAll('li'));
+
+        if (allItems.length === 0) {
+            notif("Daftar Kosong", "Tidak ada barang untuk dicoret.", "warning");
+            return;
+        }
+
+        allItems.forEach(targetLi => {
+            if (!targetLi.classList.contains('done')) {
+                targetLi.classList.add('done');
+
+                const span = targetLi.querySelector('.item-text');
+                const delBtn = targetLi.querySelector('.btn-del');
+
+                if (span) span.classList.add('line-through', 'opacity-40');
+                if (delBtn) {
+                    delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
+                    delBtn.innerHTML = iconDone;
+                }
+
+                // Pindahkan setiap barang yang dicoret ke bagian atas
+                list.insertBefore(targetLi, list.firstChild);
+            }
+        });
+
+        updateTampilan();
+        saveBelanja();
+        notif("Berhasil", "Semua barang telah dicoret.", "success");
+        return;
+            }
+
             // ==========================================
     // PERINTAH: CORET / CENTANG BARANG (Pindah ke Paling Atas)
     // ==========================================
@@ -480,19 +513,11 @@
                 span.classList.add('line-through', 'opacity-40');
                 delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
                 delBtn.innerHTML = iconDone;
-
-                // 🚀 Pindahkan elemen ini ke paling atas list (urutan pertama)
-                list.insertBefore(targetLi, list.firstChild);
-
                 notif("Barang Dicoret", `"${capitalize(namaTarget)}" ditandai selesai dan dipindah ke atas.`, "success");
             } else {
                 span.classList.remove('line-through', 'opacity-40');
                 delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
                 delBtn.innerHTML = iconHapus;
-
-                // Jika coretan dilepas, kembalikan urutan alfabet daftar
-                sortListAZ();
-
                 notif("Coretan Dilepas", `"${capitalize(namaTarget)}" dikembalikan ke daftar aktif.`, "info");
             }
 
