@@ -146,16 +146,6 @@
         tambah.addEventListener('click', addItem);
         writeList.addEventListener('keyup', (e) => { if (e.key === 'Enter') addItem(); });
 
-        function sortListAZ() {
-            const items = Array.from(list.querySelectorAll('li'));
-            items.sort((a, b) => {
-                const nameA = a.dataset.nama.toLowerCase();
-                const nameB = b.dataset.nama.toLowerCase();
-                return nameA.localeCompare(nameB);
-            });
-            items.forEach(item => list.appendChild(item));
-        }
-
         function renderItemContent(li, nama, qty, unit) {
             nama = capitalize(nama);
             li.dataset.nama = nama;
@@ -201,11 +191,14 @@
                 const currentQty = parseInt(existingLi.dataset.qty, 10) || 0;
                 const newQty = currentQty + qtyInt;
                 renderItemContent(existingLi, existingLi.dataset.nama, newQty.toString(), unit);
+                // Pindahkan item yang di-update ke paling atas
+                list.prepend(existingLi);
             } else {
                 const li = document.createElement('li');
                 li.className = "item flex items-center justify-between p-3 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 transition-all border border-gray-200 dark:border-zinc-700 marker:font-bold marker:text-purple-500";
                 renderItemContent(li, namaClean, qtyInt.toString(), unit);
-                list.appendChild(li);
+                // Tambahkan barang di paling atas
+                list.prepend(li);
             }
         }
 
@@ -228,7 +221,6 @@
                 tambahBelanja(data, qty, unit);
             }
 
-            sortListAZ();
             updateTampilan();
             writeList.value = "";
             writeQty.value = "1";
@@ -404,7 +396,7 @@
                 return;
             }
 
-            // 4. PERINTAH: HAPUS BARANG SATUAN (Misal: "hapus hasil")
+            // 4. PERINTAH: HAPUS BARANG SATUAN
             if (cleanInput.startsWith('hapus ')) {
                 const namaTarget = cleanInput.replace(/^hapus\s+/, '').trim();
                 const targetLi = Array.from(list.querySelectorAll('li')).find(
@@ -413,357 +405,8 @@
 
                 if (targetLi) {
                     targetLi.remove();
-                    sortListAZ();
                     updateTampilan();
                     saveBelanja();
                     notif("Berhasil Dihapus", `Barang "${capitalize(namaTarget)}" telah dihapus.`, "success");
                 } else {
-                    notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ada di daftar.`, "warning");
-                }
-                return;
-            }
-
-            // 5. PERINTAH: KURANGI BARANG (Misal: "kurangi garam" atau "kurangi 2 garam")
-            if (cleanInput.startsWith('kurangi ')) {
-                let sisaTeks = cleanInput.replace(/^kurangi\s+/, '').trim();
-                let qtyKurang = 1;
-                const matchQty = sisaTeks.match(/^(\d+)\s+(.+)/);
-
-                if (matchQty) {
-                    qtyKurang = parseInt(matchQty[1], 10);
-                    sisaTeks = matchQty[2].trim();
-                }
-
-                const namaTarget = sisaTeks;
-                const targetLi = Array.from(list.querySelectorAll('li')).find(
-                    li => li.dataset.nama.toLowerCase() === namaTarget
-                );
-
-                if (targetLi) {
-                    const currQty = parseInt(targetLi.dataset.qty, 10) || 1;
-                    const newQty = currQty - qtyKurang;
-
-                    if (newQty <= 0) {
-                        targetLi.remove();
-                        notif("Barang Dihapus", `Kuantitas "${capitalize(namaTarget)}" habis dan telah dihapus.`, "info");
-                    } else {
-                        renderItemContent(targetLi, targetLi.dataset.nama, newQty.toString(), targetLi.dataset.unit);
-                        notif("Berhasil Dikurangi", `Kuantitas "${capitalize(namaTarget)}" berkurang jadi ${newQty}.`, "success");
-                    }
-
-                    sortListAZ();
-                    updateTampilan();
-                    saveBelanja();
-                } else {
-                    notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ditemukan di daftar.`, "warning");
-                }
-                return;
-            }
-
-            if (/^(coret|centang|check)\s+semua$/i.test(cleanInput)) {
-        const allItems = Array.from(list.querySelectorAll('li'));
-
-        if (allItems.length === 0) {
-            notif("Daftar Kosong", "Tidak ada barang untuk dicoret.", "warning");
-            return;
-        }
-
-        allItems.forEach(targetLi => {
-            if (!targetLi.classList.contains('done')) {
-                targetLi.classList.add('done');
-
-                const span = targetLi.querySelector('.item-text');
-                const delBtn = targetLi.querySelector('.btn-del');
-
-                if (span) span.classList.add('line-through', 'opacity-40');
-                if (delBtn) {
-                    delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
-                    delBtn.innerHTML = iconDone;
-                }
-
-                // Pindahkan setiap barang yang dicoret ke bagian atas
-                list.insertBefore(targetLi, list.firstChild);
-            }
-        });
-
-        updateTampilan();
-        saveBelanja();
-        notif("Berhasil", "Semua barang telah dicoret.", "success");
-        return;
-            }
-
-            // ==========================================
-    // PERINTAH: CORET / CENTANG BARANG (Pindah ke Paling Atas)
-    // ==========================================
-    if (/^(coret|centang|check)\s+/i.test(cleanInput)) {
-        const namaTarget = cleanInput.replace(/^(coret|centang|check|sudah|selesai)\s+/, '').trim();
-        
-        const targetLi = Array.from(list.querySelectorAll('li')).find(
-            li => li.dataset.nama.toLowerCase() === namaTarget
-        );
-
-        if (targetLi) {
-            // Toggle status coret/done
-            targetLi.classList.toggle('done');
-            
-            const span = targetLi.querySelector('.item-text');
-            const delBtn = targetLi.querySelector('.btn-del');
-
-            if (targetLi.classList.contains('done')) {
-                span.classList.add('line-through', 'opacity-40');
-                delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
-                delBtn.innerHTML = iconDone;
-                notif("Barang Dicoret", `"${capitalize(namaTarget)}" ditandai selesai dan dipindah ke atas.`, "success");
-            } else {
-                span.classList.remove('line-through', 'opacity-40');
-                delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
-                delBtn.innerHTML = iconHapus;
-                notif("Coretan Dilepas", `"${capitalize(namaTarget)}" dikembalikan ke daftar aktif.`, "info");
-            }
-
-            updateTampilan();
-            saveBelanja();
-        } else {
-            notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ada di daftar.`, "warning");
-        }
-        return;
-    }
-
-            // ==========================================
-    // PERINTAH: UBAH / GANTI NAMA BARANG
-    // Contoh: "ganti garam ke gula", "ubah endog jadi telur"
-    // ==========================================
-    if (/^(ganti|ubah)\s+/i.test(cleanInput)) {
-        // Regex untuk menangkap namaLama dan namaBaru dipisahkan oleh 'ke' atau 'jadi'
-        const matchUbah = cleanInput.match(/^(?:ganti|ubah)\s+(.+?)\s+(?:ke|jadi)\s+(.+)$/i);
-
-        if (matchUbah) {
-            const namaLama = matchUbah[1].trim();
-            const namaBaru = matchUbah[2].trim();
-
-            const targetLi = Array.from(list.querySelectorAll('li')).find(
-                li => li.dataset.nama.toLowerCase() === namaLama
-            );
-
-            if (targetLi) {
-                const currentQty = targetLi.dataset.qty;
-                const currentUnit = targetLi.dataset.unit;
-
-                // Cek apakah nama baru sudah ada di daftar lain
-                const existingBaru = Array.from(list.querySelectorAll('li')).find(
-                    li => li !== targetLi && li.dataset.nama.toLowerCase() === namaBaru.toLowerCase()
-                );
-
-                if (existingBaru) {
-                    // Jika barang dengan nama baru sudah ada, gabungkan kuantitasnya
-                    const newQty = (parseInt(existingBaru.dataset.qty, 10) || 1) + (parseInt(currentQty, 10) || 1);
-                    renderItemContent(existingBaru, existingBaru.dataset.nama, newQty.toString(), existingBaru.dataset.unit);
-                    targetLi.remove(); // Hapus item lama yang diganti
-                    notif("Digabungkan", `"${capitalize(namaLama)}" diganti jadi "${capitalize(namaBaru)}" & kuantitas digabung.`, "success");
-                } else {
-                    // Update item dengan nama baru
-                    renderItemContent(targetLi, namaBaru, currentQty, currentUnit);
-                    notif("Berhasil Diubah", `"${capitalize(namaLama)}" diubah menjadi "${capitalize(namaBaru)}".`, "success");
-                }
-
-                sortListAZ();
-                updateTampilan();
-                saveBelanja();
-            } else {
-                notif("Tidak Ditemukan", `Barang "${namaLama}" tidak ada di daftar.`, "warning");
-            }
-        } else {
-            notif("Format Salah", "Gunakan format: 'ganti [nama lama] ke [nama baru]'", "info");
-        }
-        return;
-    }
-
-            // 6. LOGIKA PENAMBAHAN BARANG
-            const unitMap = {
-                'pcs': 'pcs', 'pisis': 'pcs', 'buah': 'buah', 'biji': 'biji', 
-                'bungkus': 'bungkus', 'brambang': 'bungkus',
-                'pack': 'pack', 'pak': 'pack', 'peck': 'pack',
-                'dus': 'dus', 'dos': 'dus', 'karton': 'dus',
-                'butir': 'butir', 'telur': 'butir',
-                'botol': 'botol'
-            };
-
-            let cleanTeks = teks
-                .toLowerCase()
-                .replace(/\b(dan|terus|lalu|sama)\b/gi, ',')
-                .replace(/(\d+)\s+([a-zA-Z])/g, '$1, $2');
-
-            const itemsRaw = cleanTeks.split(',');
-
-            itemsRaw.forEach(itemStr => {
-                const words = itemStr.trim().split(/\s+/);
-                if (words.length === 0 || words[0] === '') return;
-
-                let detectedQty = "1";
-                let detectedUnit = "pcs";
-                let namaBarangArr = [];
-
-                for (let i = 0; i < words.length; i++) {
-                    const word = words[i];
-                    const cleanWord = word.toLowerCase();
-
-                    if (unitMap[cleanWord]) {
-                        detectedUnit = unitMap[cleanWord];
-                        continue;
-                    }
-
-                    if (/^\d+$/.test(cleanWord)) {
-                        detectedQty = cleanWord;
-                        continue;
-                    }
-
-                    namaBarangArr.push(word);
-                }
-
-                const namaFinal = namaBarangArr.join(' ').trim();
-
-                if (namaFinal) {
-                    tambahBelanja(namaFinal, detectedQty, detectedUnit);
-                }
-            });
-
-            sortListAZ();
-            updateTampilan();
-            saveBelanja();
-        }
-
-        // Event Delegation (Click Items)
-        document.addEventListener('click', (e) => {
-            // Edit Item
-            if (e.target.closest('.btn-edit')) {
-                const li = e.target.closest('li');
-                const currNama = li.dataset.nama;
-                const currQty = li.dataset.qty;
-                const currUnit = li.dataset.unit;
-
-                const optionsHtml = optionUnits.map(u => `<option value="${u}" ${u === currUnit ? 'selected' : ''}>${u}</option>`).join('');
-
-                Swal.fire({
-                    title: 'Edit Item',
-                    html: `
-                        <div class="flex flex-col gap-3 text-left">
-                            <div>
-                                <label class="text-xs font-semibold text-gray-500">Nama Barang</label>
-                                <input id="swal-nama" class="swal2-input !m-0 !w-full" value="${currNama}">
-                            </div>
-                            <div class="flex gap-2">
-                                <div class="w-1/2">
-                                    <label class="text-xs font-semibold text-gray-500">Qty</label>
-                                    <input id="swal-qty" type="number" min="1" class="swal2-input !m-0 !w-full" value="${currQty}">
-                                </div>
-                                <div class="w-1/2">
-                                    <label class="text-xs font-semibold text-gray-500">Satuan</label>
-                                    <select id="swal-unit" class="swal2-select !m-0 !w-full !h-[48px] !mt-1">${optionsHtml}</select>
-                                </div>
-                            </div>
-                        </div>
-                    `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Simpan',
-                    cancelButtonText: 'Batal',
-                    preConfirm: () => {
-                        const nama = document.getElementById('swal-nama').value.trim();
-                        const qty = document.getElementById('swal-qty').value || "1";
-                        const unit = document.getElementById('swal-unit').value;
-
-                        if (!nama) {
-                            Swal.showValidationMessage('Nama barang tidak boleh kosong');
-                            return false;
-                        }
-                        return { nama, qty, unit };
-                    }
-                }).then((res) => {
-                    if (res.isConfirmed) {
-                        renderItemContent(li, res.value.nama, res.value.qty, res.value.unit);
-                        sortListAZ();
-                        saveBelanja();
-                    }
-                });
-                return;
-            }
-
-            // Coret Item Done
-            if (e.target.classList.contains('item-text')) {
-                const li = e.target.closest('li');
-                li.classList.toggle('done');
-                
-                const span = li.querySelector('.item-text');
-                const delBtn = li.querySelector('.btn-del');
-
-                if (li.classList.contains('done')) {
-                    span.classList.add('line-through', 'opacity-40');
-                    delBtn.className = "btn-del p-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white transition-colors cursor-pointer";
-                    delBtn.innerHTML = iconDone;
-                } else {
-                    span.classList.remove('line-through', 'opacity-40');
-                    delBtn.className = "btn-del p-2 rounded-full bg-rose-500 hover:bg-rose-600 text-white transition-colors cursor-pointer";
-                    delBtn.innerHTML = iconHapus;
-                }
-
-                updateTampilan();
-                saveBelanja();
-                return;
-            }
-
-            // Hapus Item
-            if (e.target.closest('.btn-del')) {
-                e.target.closest('li').remove();
-                updateTampilan();
-                saveBelanja();
-            }
-        });
-
-        function kopas() {
-            const arr = ['Daftar Belanja:\n'];
-            list.querySelectorAll('li').forEach((li, idx) => {
-                const txt = li.querySelector('.item-text').innerText;
-                arr.push(li.classList.contains('done') ? `${idx+1}. ~${txt}~ ✅` : `${idx+1}. ${txt}`);
-            });
-            navigator.clipboard.writeText(arr.join('\n'));
-            notif("Daftar Belanja Telah Disalin!", "", "success");
-        }
-
-        function hapus() {
-            Swal.fire({
-                title: "Apakah Anda Yakin?",
-                text: "Seluruh daftar belanja akan dibersihkan",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#e11d48",
-                confirmButtonText: "Ya, bersihkan",
-                cancelButtonText: "Batal"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    list.innerHTML = '';
-                    updateTampilan();
-                    saveBelanja();
-                    notif("Berhasil!", "Daftar Belanja Telah Dibersihkan", "success");
-                }
-            });
-        }
-
-        function notif(judul, teks, ikon) {
-            Swal.fire({ title: judul, text: teks, icon: ikon, timer: 2000, showConfirmButton: false });
-        }
-
-        function saveBelanja() {
-            localStorage.setItem('belanjaan_html', list.innerHTML);
-        }
-
-        function loadBelanja() {
-            const saved = localStorage.getItem('belanjaan_html');
-            if (saved) {
-                list.innerHTML = saved;
-                updateTampilan();
-            }
-        }
-
-        loadBelanja();
-    </script>
-</body>
-</html>
+                    notif("Tidak Ditemukan", `Barang "${namaTarget}" tidak ada di daftar.`, "war
