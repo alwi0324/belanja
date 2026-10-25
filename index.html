@@ -146,16 +146,6 @@
         tambah.addEventListener('click', addItem);
         writeList.addEventListener('keyup', (e) => { if (e.key === 'Enter') addItem(); });
 
-        function sortListAZ() {
-            const items = Array.from(list.querySelectorAll('li'));
-            items.sort((a, b) => {
-                const nameA = a.dataset.nama.toLowerCase();
-                const nameB = b.dataset.nama.toLowerCase();
-                return nameA.localeCompare(nameB);
-            });
-            items.forEach(item => list.appendChild(item));
-        }
-
         function renderItemContent(li, nama, qty, unit) {
             nama = capitalize(nama);
             li.dataset.nama = nama;
@@ -205,7 +195,7 @@
                 const li = document.createElement('li');
                 li.className = "item flex items-center justify-between p-3 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 transition-all border border-gray-200 dark:border-zinc-700 marker:font-bold marker:text-purple-500";
                 renderItemContent(li, namaClean, qtyInt.toString(), unit);
-                list.appendChild(li);
+                list.prepend(li);
             }
         }
 
@@ -227,8 +217,7 @@
             } else {
                 tambahBelanja(data, qty, unit);
             }
-
-            sortListAZ();
+            
             updateTampilan();
             writeList.value = "";
             writeQty.value = "1";
